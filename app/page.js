@@ -1,95 +1,107 @@
+import Image from "next/image";
+import { BookOpenText } from 'lucide-react';
+import supportImg from "../images/support.png";
+
+
 export default function Home() {
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-6xl flex-col justify-center px-6 py-16 text-white md:px-10 lg:px-12">
-      <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-        <section className="space-y-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/80 backdrop-blur">
-            <span className="h-2 w-2 rounded-full bg-amber-300" />
-            Support creators with one-time tips and recurring memberships
-          </div>
+    <>
+      <div className="flex flex-col flex-1 justify-center items-center text-white p-24">
+        <div className=" flex text-6xl font-bold mb-4">  Buy me a Chai </div>
 
-          <div className="space-y-4">
-            <h1 className="max-w-2xl text-5xl font-black tracking-tight text-balance md:text-6xl lg:text-7xl">
-              Make it easy for fans to buy you a chai.
-            </h1>
-            <p className="max-w-2xl text-lg leading-8 text-white/75 md:text-xl">
-              GetMeAChai is a simple crowdfunding landing page for creators. Share your page,
-              collect support, and keep building with your community.
-            </p>
-          </div>
+        <p> A crowdfunding platform for creators . Get funded by your fans and followers . Start Now</p>
 
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <a
-              href="#support"
-              className="inline-flex items-center justify-center rounded-full bg-amber-300 px-6 py-3 font-semibold text-slate-950 transition hover:bg-amber-200"
-            >
-              Start your page
-            </a>
-            <a
-              href="#how-it-works"
-              className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
-            >
-              See how it works
-            </a>
-          </div>
+        <div className="mt-6">
+          <button
+            className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-semibold text-heading rounded-full group bg-gradient-to-br from-purple-600 to-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800"
+          >
+            <span className="relative z-10 px-4 py-2.5">Start Here</span>
 
-          <div className="grid gap-4 pt-4 sm:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-black/20 p-5 backdrop-blur">
-              <div className="text-2xl font-bold">Fast</div>
-              <p className="mt-2 text-sm text-white/65">Set up a creator page in minutes.</p>
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 z-0 bg-neutral-primary-soft/10 backdrop-blur-md opacity-0 blur-sm transition-all duration-300 group-hover:opacity-100"
+            />
+
+            <span
+              aria-hidden="true"
+              className="absolute -left-10 top-0 h-full w-10 bg-gradient-to-r from-white/40 via-white/10 to-transparent opacity-0 blur-sm transition-all duration-500 group-hover:left-1/2 group-hover:opacity-100"
+            />
+          </button>
+
+          <button
+            className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-semibold text-heading rounded-full group bg-gradient-to-br from-purple-600 to-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 ml-4"
+          >
+            <span className="relative z-10 px-4 py-2.5">Read More</span>
+
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 z-0 bg-neutral-primary-soft/10 backdrop-blur-md opacity-0 blur-sm transition-all duration-300 group-hover:opacity-100"
+            />
+
+            <span
+              aria-hidden="true"
+              className="absolute -left-10 top-0 h-full w-10 bg-gradient-to-r from-white/40 via-white/10 to-transparent opacity-0 blur-sm transition-all duration-500 group-hover:left-1/2 group-hover:opacity-100"
+            />
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white h-1 opacity-10"></div>
+
+      <div className="w-full px-6 py-12 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+          <div className="border border-white rounded-lg p-6 w-full flex flex-col justify-start">
+              <div className="flex-grid  gap-5">
+              <h1 className="text-white text-xl font-bold">
+                Your Fans can buy you a Chai and support you in your creative journey.
+              </h1>
+
+              <BookOpenText size={88} color="white" />
+
+             
             </div>
-            <div className="rounded-3xl border border-white/10 bg-black/20 p-5 backdrop-blur">
-              <div className="text-2xl font-bold">Direct</div>
-              <p className="mt-2 text-sm text-white/65">Support goes straight to you.</p>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-black/20 p-5 backdrop-blur">
-              <div className="text-2xl font-bold">Flexible</div>
-              <p className="mt-2 text-sm text-white/65">Tips, memberships, and shout-outs.</p>
+          </div>
+
+          <div className="border border-white rounded-lg p-6 w-full flex flex-col justify-start">
+            <div className="flex-grid gap-5">
+              <h1 className="text-white text-xl font-bold">
+                Your Fans can buy you a Chai and support you in your creative journey.
+              </h1>
+
+              <BookOpenText size={88} color="white" />
+
+        
             </div>
           </div>
-        </section>
 
-        <aside className="space-y-6 rounded-[2rem] border border-white/10 bg-white/8 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl">
-          <div className="rounded-2xl bg-slate-950/70 p-5 ring-1 ring-white/10">
-            <p className="text-sm uppercase tracking-[0.25em] text-amber-300">Live preview</p>
-            <div className="mt-4 space-y-3">
-              <h2 className="text-2xl font-bold">Creator profile</h2>
-              <p className="text-sm leading-6 text-white/70">
-                Tell supporters what you make, why it matters, and how their chai helps the next
-                release.
+          <div className="border border-white rounded-lg p-6 w-full flex flex-col justify-start text-white">
+            <div className=" flex-grid  gap-5">
+              <h1 className="text-white text-xl font-bold">
+                Fans Want to help
+              </h1>
+
+               <Image
+                src={supportImg}
+                alt="Support"
+                width={96}
+                height={96}
+                className="w-24 h-24"
+              />
+
+           
+
+              <p >
+                Fans want to help their favorite creators. They want to support them in their creative journey. They want to buy them a Chai and support them in their creative journey.
               </p>
             </div>
-            <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-              <div>
-                <p className="text-sm text-white/60">Monthly support</p>
-                <p className="text-xl font-semibold">124 supporters</p>
-              </div>
-              <div className="rounded-full bg-emerald-400/15 px-3 py-1 text-sm font-semibold text-emerald-300">
-                Growing
-              </div>
-            </div>
           </div>
-
-          <div id="how-it-works" className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="text-sm text-white/60">Step 1</p>
-              <p className="mt-2 font-semibold">Create your creator page</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="text-sm text-white/60">Step 2</p>
-              <p className="mt-2 font-semibold">Share it with your audience</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="text-sm text-white/60">Step 3</p>
-              <p className="mt-2 font-semibold">Receive support instantly</p>
-            </div>
-            <div id="support" className="rounded-2xl border border-white/10 bg-amber-300 p-4 text-slate-950">
-              <p className="text-sm font-medium">Best part</p>
-              <p className="mt-2 font-semibold">Your fans can support you with one click.</p>
-            </div>
-          </div>
-        </aside>
+        </div>
       </div>
-    </div>
+
+
+    </>
+
+
   );
 }
+
