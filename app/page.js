@@ -11,22 +11,24 @@ export default function Home() {
   return (
     <>
       <div className="flex flex-col flex-1 justify-center items-center text-white p-24">
-        <div className="flex items-start text-6xl font-bold mb-4">  Buy me a Chai
-          
+        <div className="anim-fade-up flex items-center text-6xl font-bold mb-4 font-serif">
+          Buy me a
+          <span className="ml-3 bg-gradient-to-r from-purple-400 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent">Chai</span>
           <Image
-                src={tea}
-                alt="Support"
-                width={106}
-                height={106}
-                className="w-24 h-24 relative -top-5"
-              /> </div>
+            src={tea}
+            alt="Support"
+            width={106}
+            height={106}
+            className="w-20 h-20 relative -top-4 ml-2"
+          />
+        </div>
 
-        
-        <p> A crowdfunding platform for creators . Get funded by your fans and followers . Start Now</p>
 
-        <div className="mt-6">
+        <p className="anim-fade-up anim-delay-1 text-gray-400 text-base max-w-xl text-center">A crowdfunding platform for creators. Get funded by your fans and followers. Start Now</p>
+
+        <div className="anim-fade-up anim-delay-2 mt-6">
           <button
-            className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-semibold text-heading rounded-full group bg-gradient-to-br from-purple-600 to-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800"
+            className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-semibold text-heading rounded-full group bg-gradient-to-br from-purple-600 to-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 transition-transform duration-150 hover:scale-105 active:scale-95"
           >
             <span className="relative z-10 px-4 py-2.5">Start Here</span>
 
@@ -42,84 +44,74 @@ export default function Home() {
           </button>
 
           <button
-            className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-semibold text-heading rounded-full group bg-gradient-to-br from-purple-600 to-blue-500 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 ml-4"
+            className="ml-4 inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-purple-300 rounded-full border border-purple-500/30 hover:bg-purple-500/10 hover:border-purple-400 transition-all duration-200"
           >
-            <span className="relative z-10 px-4 py-2.5">Read More</span>
-
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 z-0 bg-neutral-primary-soft/10 backdrop-blur-md opacity-0 blur-sm transition-all duration-300 group-hover:opacity-100"
-            />
-
-            <span
-              aria-hidden="true"
-              className="absolute -left-10 top-0 h-full w-10 bg-gradient-to-r from-white/40 via-white/10 to-transparent opacity-0 blur-sm transition-all duration-500 group-hover:left-1/2 group-hover:opacity-100"
-            />
+            Read More
           </button>
         </div>
       </div>
 
-      <div className="bg-white h-1 opacity-10"></div>
+      <div className="max-w-7xl mx-auto px-6"><div className="h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent"></div></div>
 
       <div className="max-w-7xl mx-auto px-6 py-10">
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
 
-    <div className="border border-white/10 rounded-xl p-4 flex items-center gap-4">
-      <div className="bg-purple-900/30 p-3 rounded-full">
-        👥
-      </div>
-      <div>
-        <h2 className="text-purple-400 text-2xl font-bold">25K+</h2>
-        <p className="text-gray-400 text-sm">Creators Empowered</p>
-      </div>
-    </div>
+          <div className="border border-white/10 rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-purple-900/30 p-3 rounded-full">
+              👥
+            </div>
+            <div>
+              <h2 className="text-purple-400 text-2xl font-bold">25K+</h2>
+              <p className="text-gray-400 text-sm">Creators Empowered</p>
+            </div>
+          </div>
 
-    <div className="border border-white/10 rounded-xl p-4 flex items-center gap-4">
-      <div className="bg-purple-900/30 p-3 rounded-full">
-        ☕
-      </div>
-      <div>
-        <h2 className="text-purple-400 text-2xl font-bold">1.8M+</h2>
-        <p className="text-gray-400 text-sm">Chais Bought</p>
-      </div>
-    </div>
+          <div className="border border-white/10 rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-purple-900/30 p-3 rounded-full">
+              ☕
+            </div>
+            <div>
+              <h2 className="text-purple-400 text-2xl font-bold">1.8M+</h2>
+              <p className="text-gray-400 text-sm">Chais Bought</p>
+            </div>
+          </div>
 
-    <div className="border border-white/10 rounded-xl p-4 flex items-center gap-4">
-      <div className="bg-purple-900/30 p-3 rounded-full">
-        💜
-      </div>
-      <div>
-        <h2 className="text-purple-400 text-2xl font-bold">500K+</h2>
-        <p className="text-gray-400 text-sm">Supporters Worldwide</p>
-      </div>
-    </div>
+          <div className="border border-white/10 rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-purple-900/30 p-3 rounded-full">
+              💜
+            </div>
+            <div>
+              <h2 className="text-purple-400 text-2xl font-bold">500K+</h2>
+              <p className="text-gray-400 text-sm">Supporters Worldwide</p>
+            </div>
+          </div>
 
-    <div className="border border-white/10 rounded-xl p-4 flex items-center gap-4">
-      <div className="bg-purple-900/30 p-3 rounded-full">
-        ₹
+          <div className="border border-white/10 rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-purple-900/30 p-3 rounded-full">
+              ₹
+            </div>
+            <div>
+              <h2 className="text-purple-400 text-2xl font-bold">₹12Cr+</h2>
+              <p className="text-gray-400 text-sm">Earnings Generated</p>
+            </div>
+          </div>
+
+        </div>
       </div>
-      <div>
-        <h2 className="text-purple-400 text-2xl font-bold">₹12Cr+</h2>
-        <p className="text-gray-400 text-sm">Earnings Generated</p>
-      </div>
-    </div>
-
-  </div>
-</div>
 
 
-          <div className="bg-white h-1 opacity-10"></div>
+      <div className="max-w-7xl mx-auto px-6"><div className="h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent"></div></div>
 
 
 
       <div className="w-full px-6 py-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-          <div className="border border-white rounded-lg p-6 w-full flex flex-col justify-start text-white">
-              <div className="flex-grid  gap-5">
+          <div className="border border-white/10 hover:border-purple-500/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/10 rounded-lg p-6 w-full flex flex-col justify-start text-white">
+            <div className="flex-grid  gap-5">
               <h1 className="text-white text-xl font-bold">
-               Create Your Creator Page
+                Create Your Creator Page
               </h1>
-               <Image
+              <Image
                 src={profile}
                 alt="Support"
                 width={96}
@@ -128,21 +120,21 @@ export default function Home() {
               />
 
               <p>Description:
-Build your personal page in minutes. Share your story, showcase your work, and let your supporters contribute with just a few clicks. </p>
+                Build your personal page in minutes. Share your story, showcase your work, and let your supporters contribute with just a few clicks. </p>
 
-             
 
-             
+
+
             </div>
           </div>
 
-          <div className="border border-white rounded-lg p-6 w-full flex flex-col justify-start text-white">
+          <div className="border border-white/10 hover:border-purple-500/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/10 rounded-lg p-6 w-full flex flex-col justify-start text-white">
             <div className="flex-grid gap-5">
               <h1 className="text-white text-xl font-bold">
                 💜 Receive Support Instantly
               </h1>
 
-               <Image
+              <Image
                 src={doller}
                 alt="Support"
                 width={96}
@@ -150,20 +142,20 @@ Build your personal page in minutes. Share your story, showcase your work, and l
                 className="w-24 h-24"
               />
 
-              <p> 
-Accept contributions from your fans and followers. Every chai purchased helps you continue creating amazing content and growing your community.</p>
+              <p>
+                Accept contributions from your fans and followers. Every chai purchased helps you continue creating amazing content and growing your community.</p>
 
-        
+
             </div>
           </div>
 
-          <div className="border border-white rounded-lg p-6 w-full flex flex-col justify-start text-white">
+          <div className="border border-white/10 hover:border-purple-500/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/10 rounded-lg p-6 w-full flex flex-col justify-start text-white">
             <div className=" flex-grid  gap-5">
               <h1 className="text-white text-xl font-bold">
                 Fans Want to help
               </h1>
 
-               <Image
+              <Image
                 src={supportImg}
                 alt="Support"
                 width={96}
@@ -171,7 +163,7 @@ Accept contributions from your fans and followers. Every chai purchased helps yo
                 className="w-24 h-24"
               />
 
-           
+
 
               <p >
                 Fans want to help their favorite creators. They want to support them in their creative journey. They want to buy them a Chai and support them in their creative journey.
@@ -182,145 +174,145 @@ Accept contributions from your fans and followers. Every chai purchased helps yo
       </div>
 
 
-          <div className="bg-white h-1 opacity-10"></div>
+      <div className="max-w-7xl mx-auto px-6"><div className="h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent"></div></div>
 
-          <div className="max-w-7xl mx-auto px-6 py-12">
-  <h2 className="text-3xl font-bold text-white text-center mb-8">
-    Creators You Can Support
-  </h2>
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <h2 className="text-4xl font-bold text-white text-center mb-8 font-serif">
+          Creators You Can Support
+        </h2>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-    <div className="bg-[#111] border border-purple-900/30 rounded-xl p-4">
-      <div className="flex items-center gap-3">
-        <img
-          src="https://i.pravatar.cc/100?img=1"
-          alt="creator"
-          className="w-14 h-14 rounded-full"
-        />
-        <div>
-          <h3 className="text-white font-bold">CodeWithRahul</h3>
-          <p className="text-gray-400 text-sm">Web Developer</p>
+          <div className="bg-[#111] border border-purple-900/30 rounded-xl p-4 group transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/40 hover:shadow-md hover:shadow-purple-500/10">
+            <div className="flex items-center gap-3">
+              <img
+                src="https://i.pravatar.cc/100?img=1"
+                alt="creator"
+                className="w-14 h-14 rounded-full ring-2 ring-purple-500/20 transition-transform duration-300 group-hover:scale-110"
+              />
+              <div>
+                <h3 className="text-white font-bold">CodeWithRahul</h3>
+                <p className="text-gray-400 text-sm">Web Developer</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 text-sm text-gray-400 mt-4">
+              <span>☕ 2,453</span>
+              <span>₹1,24,500</span>
+            </div>
+
+            <button className="mt-4 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2 rounded-lg font-semibold transition-all duration-150 hover:scale-[1.03] active:scale-95 cursor-pointer">
+              Support
+            </button>
+          </div>
+
+          <div className="bg-[#111] border border-purple-900/30 rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <img
+                src="https://i.pravatar.cc/100?img=5"
+                alt="creator"
+                className="w-14 h-14 rounded-full ring-2 ring-purple-500/20"
+              />
+              <div>
+                <h3 className="text-white font-bold">ArtByPriya</h3>
+                <p className="text-gray-400 text-sm">Digital Artist</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 text-sm text-gray-400 mt-4">
+              <span>☕ 1,892</span>
+              <span>₹98,760</span>
+            </div>
+
+            <button className="mt-4 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2 rounded-lg font-semibold transition-all duration-200">
+              Support
+            </button>
+          </div>
+
+          <div className="bg-[#111] border border-purple-900/30 rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <img
+                src="https://i.pravatar.cc/100?img=12"
+                alt="creator"
+                className="w-14 h-14 rounded-full ring-2 ring-purple-500/20"
+              />
+              <div>
+                <h3 className="text-white font-bold">WriteWithArjun</h3>
+                <p className="text-gray-400 text-sm">Writer</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 text-sm text-gray-400 mt-4">
+              <span>☕ 1,205</span>
+              <span>₹75,340</span>
+            </div>
+
+            <button className="mt-4 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2 rounded-lg font-semibold transition-all duration-200">
+              Support
+            </button>
+          </div>
+
+          <div className="bg-[#111] border border-purple-900/30 rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <img
+                src="https://i.pravatar.cc/100?img=9"
+                alt="creator"
+                className="w-14 h-14 rounded-full ring-2 ring-purple-500/20"
+              />
+              <div>
+                <h3 className="text-white font-bold">TechWithNeha</h3>
+                <p className="text-gray-400 text-sm">Tech Educator</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 text-sm text-gray-400 mt-4">
+              <span>☕ 2,112</span>
+              <span>₹1,05,230</span>
+            </div>
+
+            <button className="mt-4 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2 rounded-lg font-semibold transition-all duration-200">
+              Support
+            </button>
+          </div>
+
         </div>
       </div>
 
-      <div className="flex gap-4 text-sm text-gray-400 mt-4">
-        <span>☕ 2,453</span>
-        <span>₹1,24,500</span>
-      </div>
+      <div className="max-w-7xl mx-auto px-6 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
-      <button className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg">
-        Support
-      </button>
-    </div>
+          <div className="bg-[#111] border border-white/5 hover:border-purple-500/20 transition-colors duration-300 rounded-xl p-4 text-white">
+            <h3 className="font-bold text-purple-400">0% Platform Fee</h3>
+            <p className="text-gray-400 text-sm mt-2">
+              100% of your support goes to the creator.
+            </p>
+          </div>
 
-    <div className="bg-[#111] border border-purple-900/30 rounded-xl p-4">
-      <div className="flex items-center gap-3">
-        <img
-          src="https://i.pravatar.cc/100?img=5"
-          alt="creator"
-          className="w-14 h-14 rounded-full"
-        />
-        <div>
-          <h3 className="text-white font-bold">ArtByPriya</h3>
-          <p className="text-gray-400 text-sm">Digital Artist</p>
+          <div className="bg-[#111] rounded-xl p-4 text-white">
+            <h3 className="font-bold text-purple-400">Withdraw Anytime</h3>
+            <p className="text-gray-400 text-sm mt-2">
+              Creators can withdraw earnings whenever needed.
+            </p>
+          </div>
+
+          <div className="bg-[#111] rounded-xl p-4 text-white">
+            <h3 className="font-bold text-purple-400">Safe & Secure</h3>
+            <p className="text-gray-400 text-sm mt-2">
+              Payments are protected with industry-standard security.
+            </p>
+          </div>
+
+          <div className="bg-[#111] rounded-xl p-4 text-white">
+            <h3 className="font-bold text-purple-400">24/7 Support</h3>
+            <p className="text-gray-400 text-sm mt-2">
+              We are here whenever you need help.
+            </p>
+          </div>
+
         </div>
       </div>
 
-      <div className="flex gap-4 text-sm text-gray-400 mt-4">
-        <span>☕ 1,892</span>
-        <span>₹98,760</span>
-      </div>
 
-      <button className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg">
-        Support
-      </button>
-    </div>
-
-    <div className="bg-[#111] border border-purple-900/30 rounded-xl p-4">
-      <div className="flex items-center gap-3">
-        <img
-          src="https://i.pravatar.cc/100?img=12"
-          alt="creator"
-          className="w-14 h-14 rounded-full"
-        />
-        <div>
-          <h3 className="text-white font-bold">WriteWithArjun</h3>
-          <p className="text-gray-400 text-sm">Writer</p>
-        </div>
-      </div>
-
-      <div className="flex gap-4 text-sm text-gray-400 mt-4">
-        <span>☕ 1,205</span>
-        <span>₹75,340</span>
-      </div>
-
-      <button className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg">
-        Support
-      </button>
-    </div>
-
-    <div className="bg-[#111] border border-purple-900/30 rounded-xl p-4">
-      <div className="flex items-center gap-3">
-        <img
-          src="https://i.pravatar.cc/100?img=9"
-          alt="creator"
-          className="w-14 h-14 rounded-full"
-        />
-        <div>
-          <h3 className="text-white font-bold">TechWithNeha</h3>
-          <p className="text-gray-400 text-sm">Tech Educator</p>
-        </div>
-      </div>
-
-      <div className="flex gap-4 text-sm text-gray-400 mt-4">
-        <span>☕ 2,112</span>
-        <span>₹1,05,230</span>
-      </div>
-
-      <button className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg">
-        Support
-      </button>
-    </div>
-
-  </div>
-</div>
-
-<div className="max-w-7xl mx-auto px-6 pb-12">
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
-    <div className="bg-[#111] rounded-xl p-4 text-white">
-      <h3 className="font-bold text-purple-400">0% Platform Fee</h3>
-      <p className="text-gray-400 text-sm mt-2">
-        100% of your support goes to the creator.
-      </p>
-    </div>
-
-    <div className="bg-[#111] rounded-xl p-4 text-white">
-      <h3 className="font-bold text-purple-400">Withdraw Anytime</h3>
-      <p className="text-gray-400 text-sm mt-2">
-        Creators can withdraw earnings whenever needed.
-      </p>
-    </div>
-
-    <div className="bg-[#111] rounded-xl p-4 text-white">
-      <h3 className="font-bold text-purple-400">Safe & Secure</h3>
-      <p className="text-gray-400 text-sm mt-2">
-        Payments are protected with industry-standard security.
-      </p>
-    </div>
-
-    <div className="bg-[#111] rounded-xl p-4 text-white">
-      <h3 className="font-bold text-purple-400">24/7 Support</h3>
-      <p className="text-gray-400 text-sm mt-2">
-        We are here whenever you need help.
-      </p>
-    </div>
-
-  </div>
-</div>
-
-          
 
 
     </>

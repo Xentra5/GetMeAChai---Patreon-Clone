@@ -1,4 +1,4 @@
-import { Inter } from "next/font/google";
+import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import Navbar from "../Components/NavBar";
 import Footer from "../Components/Footer";
@@ -8,6 +8,12 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export const metadata = {
   title: "patrion",
   description: "A platform for creators to connect with their fans and monetize their content.",
@@ -15,7 +21,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} ${instrumentSerif.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col relative">
         <div className="absolute inset-0 -z-10 h-full w-full items-center px-5 py-24 pointer-events-none [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)]"></div>
 
