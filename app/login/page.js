@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -145,9 +146,9 @@ export default function LoginPage() {
             {/* Sign Up Link */}
             <p className="text-center text-sm text-gray-400 pt-1">
               Don&apos;t have an account?{" "}
-              <a href="/signup" className="text-purple-400 hover:text-purple-300 font-medium hover:underline transition-colors">
+              <Link href="/signup" className="text-purple-400 hover:text-purple-300 font-medium hover:underline transition-colors">
                 Sign Up
-              </a>
+              </Link>
             </p>
 
           </form>

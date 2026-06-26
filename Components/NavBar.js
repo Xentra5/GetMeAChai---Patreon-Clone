@@ -14,9 +14,10 @@ const NavBar = () => {
 
         <div className="flex items-center gap-3">
           <Link
-            href="/login"
+            href="/signup"
             className="px-4 py-2 border border-purple-500 rounded-lg hover:bg-purple-500/10 transition-colors cursor-pointer"
           >
+
             Sign Up
           </Link>
 
