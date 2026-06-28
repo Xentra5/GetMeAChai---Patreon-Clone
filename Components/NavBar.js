@@ -1,7 +1,11 @@
+"use client";
+
 import React from 'react'
 import Link from "next/link";
+import { useSession, signIn, signOut } from "next-auth/react"
 
 const NavBar = () => {
+  const { data: session } = useSession()
   return (
     <nav className="bg-black/50 backdrop-blur-md border-b border-gray-800 text-white sticky top-0 z-50">
       <div className="flex justify-between items-center px-6 h-16 max-w-7xl mx-auto">
