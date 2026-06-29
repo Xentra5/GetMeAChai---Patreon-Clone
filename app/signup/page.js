@@ -5,8 +5,12 @@ import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react"
 
 export default function SignPage() {
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState("");
 
     const getPasswordStrength = (pwd) => {
         if (!pwd) return { score: 0, label: "", color: "text-gray-500", barColor: "bg-gray-700" };
@@ -35,8 +39,41 @@ export default function SignPage() {
 
     const strength = getPasswordStrength(password);
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
+        setError("");
+
+        if (password !== confirmPassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: username,
+                    email,
+                    password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.error || "Something went wrong");
+                return;
+            }
+
+            // On success, redirect to login page
+            window.location.href = "/login?registered=true";
+        } catch (err) {
+            setError("An unexpected error occurred. Please try again.");
+            console.error(err);
+        }
     };
 
     return (
@@ -55,6 +92,11 @@ export default function SignPage() {
                 <div className="relative rounded-2xl border border-purple-500/20 bg-black/70 p-8 backdrop-blur-md shadow-[0_0_40px_rgba(139,92,246,0.1)]">
 
                     <form onSubmit={handleSubmit} className="space-y-5">
+                        {error && (
+                            <div className="text-red-500 text-sm text-center bg-red-500/10 border border-red-500/20 py-2 rounded-lg">
+                                {error}
+                            </div>
+                        )}
 
                         {/* UserName */}
                         <div>
@@ -66,8 +108,10 @@ export default function SignPage() {
                             </label>
                             <input
                                 id="username"
-                                type="username"
+                                type="text"
                                 required
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 placeholder="Enter your Username "
                                 className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
                             />
@@ -85,6 +129,8 @@ export default function SignPage() {
                                 id="email"
                                 type="email"
                                 required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="you@example.com"
                                 className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
                             />
@@ -139,8 +185,7 @@ export default function SignPage() {
                                         {[1, 2, 3, 4, 5].map((index) => (
                                             <div
                                                 key={index}
-                                                className={`h-full flex-1 rounded-full transition-all duration-300 ${index <= strength.score ? strength.barColor : "bg-white/10"
-                                                    }`}
+                                                className={`h-full flex-1 rounded-full transition-all duration-300 ${index <= strength.score ? strength.barColor : "bg-white/10"}`}
                                             />
                                         ))}
                                     </div>
@@ -162,6 +207,8 @@ export default function SignPage() {
                                     id="Confirm Password"
                                     type={showPassword ? "text" : "password"}
                                     required
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="••••••••"
                                     className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
                                 />

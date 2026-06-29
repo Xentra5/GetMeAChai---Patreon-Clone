@@ -5,10 +5,31 @@ import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react"
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
+
+    try {
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        setError(res.error);
+      } else {
+        window.location.href = "/";
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      console.error(err);
+    }
   };
 
   return (
@@ -27,6 +48,11 @@ export default function LoginPage() {
         <div className="relative rounded-2xl border border-purple-500/20 bg-black/70 p-8 backdrop-blur-md shadow-[0_0_40px_rgba(139,92,246,0.1)]">
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="text-red-500 text-sm text-center bg-red-500/10 border border-red-500/20 py-2 rounded-lg">
+                {error}
+              </div>
+            )}
 
             {/* Email */}
             <div>
@@ -40,6 +66,8 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
               />
@@ -66,6 +94,8 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
                 />
