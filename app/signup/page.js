@@ -32,23 +32,23 @@ const getPasswordStrength = (pwd) => {
     if (/[^A-Za-z0-9]/.test(pwd)) score++;
 
     switch (score) {
-        case 1: return { score: 1, label: "Very Weak",   color: "#ef4444", barColor: "#ef4444" };
-        case 2: return { score: 2, label: "Weak",        color: "#f97316", barColor: "#f97316" };
-        case 3: return { score: 3, label: "Medium",      color: "#eab308", barColor: "#eab308" };
-        case 4: return { score: 4, label: "Strong",      color: "#22c55e", barColor: "#22c55e" };
+        case 1: return { score: 1, label: "Very Weak", color: "#ef4444", barColor: "#ef4444" };
+        case 2: return { score: 2, label: "Weak", color: "#f97316", barColor: "#f97316" };
+        case 3: return { score: 3, label: "Medium", color: "#eab308", barColor: "#eab308" };
+        case 4: return { score: 4, label: "Strong", color: "#22c55e", barColor: "#22c55e" };
         case 5: return { score: 5, label: "Very Strong", color: "#34d399", barColor: "#34d399" };
         default: return { score: 0, label: "", color: "#6b7280", barColor: "#374151" };
     }
 };
 
 export default function SignPage() {
-    const [username, setUsername]               = useState("");
-    const [email, setEmail]                     = useState("");
-    const [password, setPassword]               = useState("");
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [showPassword, setShowPassword]       = useState(false);
-    const [showConfirm, setShowConfirm]         = useState(false);
-    const [error, setError]                     = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [error, setError] = useState("");
 
     const strength = getPasswordStrength(password);
 
@@ -77,8 +77,8 @@ export default function SignPage() {
                 setError(data.error || "Something went wrong");
                 return;
             }
+            window.location.href = "/select-role";
 
-            window.location.href = "/login?registered=true";
         } catch (err) {
             setError("An unexpected error occurred. Please try again.");
             console.error(err);
