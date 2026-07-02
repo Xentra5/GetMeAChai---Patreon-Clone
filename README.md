@@ -37,6 +37,11 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 * **Multi-provider Social Auth:** Included styled buttons ready for GitHub, Google, and Apple third-party sign-ins.
 * **Minimalist Sub-layout (`app/login/layout.js`):** Keeps authentication pages clean by bypassing redundant font imports and layout overrides.
 
+### 6. Interactive Role Selection Portal (`app/select-role/page.js`)
+* **Dynamic Role Chooser:** Allows users to select their profile type as either a **Student** (to learn and support) or a **Creator** (to share work and get funded) using beautifully styled, interactive cards with micro-animations.
+* **Stateful Flow:** Features client-side persistence (`localStorage`) and integration with a backend API route (`/api/user/role`) to update the user's role.
+* **Modern UI & UX:** Displays contextual success/error status messages with transition states and smooth navigation redirects.
+
 ---
 
 ## 🛠️ Technology Stack
