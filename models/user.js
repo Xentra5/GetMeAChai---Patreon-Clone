@@ -17,6 +17,11 @@ const UserSchema = new mongoose.Schema(
             type: String,
             required: [true, "Please provide a password"],
         },
+        role: {
+            type: String,
+            default: "student",
+            enum: ["student", "creator"],
+        },
     },
     { timestamps: true } // Automatically creates createdAt and updatedAt fields
 );

@@ -77,6 +77,19 @@ export default function SignPage() {
                 setError(data.error || "Something went wrong");
                 return;
             }
+
+            // Auto-login the user so NextAuth creates a session
+            const result = await signIn("credentials", {
+                email,
+                password,
+                redirect: false,
+            });
+
+            if (result?.error) {
+                setError("Signup succeeded, but automatic login failed: " + result.error);
+                return;
+            }
+
             window.location.href = "/select-role";
 
         } catch (err) {

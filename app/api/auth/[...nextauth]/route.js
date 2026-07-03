@@ -6,7 +6,7 @@ import connectDB from "@/db/connectDb"
 import User from "@/models/user"
 import bcrypt from "bcryptjs"
 
-const handler = NextAuth({
+export const authOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_ID,
@@ -51,6 +51,8 @@ const handler = NextAuth({
     strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET,
-})
+};
+
+const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }

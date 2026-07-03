@@ -34,18 +34,30 @@ export default function SelectRolePage() {
 
       if (response.ok) {
         alert(`Account type "${selectedRole}" saved successfully! Moving to the next step...`);
-        router.push("/"); // Redirect user to home/dashboard
+        if (selectedRole === "Student") {
+          router.push("/student/welcome");
+        } else {
+          router.push("/"); // Creators redirect to home or a creator onboarding page
+        }
       } else {
         // Fallback if API doesn't exist yet or fails
         console.warn("API returned error or is not configured yet, saved to local storage.");
         alert(`Saved ${selectedRole} to local storage. Moving to the next step...`);
-        router.push("/");
+        if (selectedRole === "Student") {
+          router.push("/student/welcome");
+        } else {
+          router.push("/");
+        }
       }
     } catch (error) {
       console.error("Error saving role:", error);
       // Fallback
       alert(`Saved ${selectedRole} to local storage. Moving to the next step...`);
-      router.push("/");
+      if (selectedRole === "Student") {
+        router.push("/student/welcome");
+      } else {
+        router.push("/");
+      }
     } finally {
       setLoading(false);
     }
@@ -70,8 +82,8 @@ export default function SelectRolePage() {
             {/* Option 1: Student */}
             <label
               className={`block bg-[#1a0b2e] border-2 rounded-2xl p-10 cursor-pointer transition-all duration-300 relative overflow-hidden group hover:bg-[#23103d] hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-950/30 ${selectedRole === "Student"
-                  ? "border-[#a855f7] bg-[rgba(168,85,247,0.1)] shadow-[0_0_20px_rgba(168,85,247,0.3)]"
-                  : "border-[#331a5c]"
+                ? "border-[#a855f7] bg-[rgba(168,85,247,0.1)] shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                : "border-[#331a5c]"
                 }`}
             >
               <input
@@ -85,8 +97,8 @@ export default function SelectRolePage() {
               <div className="flex flex-col items-center gap-4 relative z-10">
                 <div
                   className={`w-[70px] h-[70px] rounded-full flex justify-center items-center text-4xl mb-2 border transition-all duration-300 ${selectedRole === "Student"
-                      ? "bg-gradient-to-br from-[#a855f7] to-[#ec4899] border-transparent"
-                      : "bg-white/5 border-[#331a5c]"
+                    ? "bg-gradient-to-br from-[#a855f7] to-[#ec4899] border-transparent"
+                    : "bg-white/5 border-[#331a5c]"
                     }`}
                 >
                   🎓
@@ -101,8 +113,8 @@ export default function SelectRolePage() {
             {/* Option 2: Creator */}
             <label
               className={`block bg-[#1a0b2e] border-2 rounded-2xl p-10 cursor-pointer transition-all duration-300 relative overflow-hidden group hover:bg-[#23103d] hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-950/30 ${selectedRole === "Creator"
-                  ? "border-[#a855f7] bg-[rgba(168,85,247,0.1)] shadow-[0_0_20px_rgba(168,85,247,0.3)]"
-                  : "border-[#331a5c]"
+                ? "border-[#a855f7] bg-[rgba(168,85,247,0.1)] shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                : "border-[#331a5c]"
                 }`}
             >
               <input
@@ -116,8 +128,8 @@ export default function SelectRolePage() {
               <div className="flex flex-col items-center gap-4 relative z-10">
                 <div
                   className={`w-[70px] h-[70px] rounded-full flex justify-center items-center text-4xl mb-2 border transition-all duration-300 ${selectedRole === "Creator"
-                      ? "bg-gradient-to-br from-[#a855f7] to-[#ec4899] border-transparent"
-                      : "bg-white/5 border-[#331a5c]"
+                    ? "bg-gradient-to-br from-[#a855f7] to-[#ec4899] border-transparent"
+                    : "bg-white/5 border-[#331a5c]"
                     }`}
                 >
                   🚀

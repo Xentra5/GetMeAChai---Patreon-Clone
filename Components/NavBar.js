@@ -3,9 +3,21 @@
 import React from 'react'
 import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react"
+import { usePathname } from "next/navigation";
 
 const NavBar = () => {
   const { data: session } = useSession()
+  const pathname = usePathname();
+
+  // Hide the Navbar on student-only pages like the welcome screen
+  if (pathname?.startsWith("/student")) return null;
+
+  if (session) {
+    return <>
+      Signed in as {session.user.email} <br />
+      <button onClick={() => signOut()}>Sign out</button>
+    </>
+  }
   return (
     <nav className="bg-black/50 backdrop-blur-md border-b border-gray-800 text-white sticky top-0 z-50">
       <div className="flex justify-between items-center px-6 h-16 max-w-7xl mx-auto">
