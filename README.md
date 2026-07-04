@@ -27,6 +27,7 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 
 ### 4. Dedicated Sign Up Portal (`app/signup/page.js`)
 * **Interactive Sign Up Form:** Fully styled username, email, password, and confirm password fields.
+* **Auto-Login on Signup:** Automatically logs the user in immediately after registering a new account, removing unnecessary steps.
 * **Live Password Strength Meter:** Evaluates password input in real-time (from "Very Weak" to "Very Strong") with an animated five-bar indicator showing progress and dynamic color states.
 * **Password Visibility Toggle:** Integrated a stateful show/hide toggle for password entries.
 * **Multi-provider Social Auth:** Custom buttons for single-click Github, Google, and Apple third-party sign-ins.
@@ -39,8 +40,14 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 
 ### 6. Interactive Role Selection Portal (`app/select-role/page.js`)
 * **Dynamic Role Chooser:** Allows users to select their profile type as either a **Student** (to learn and support) or a **Creator** (to share work and get funded) using beautifully styled, interactive cards with micro-animations.
-* **Stateful Flow:** Features client-side persistence (`localStorage`) and integration with a backend API route (`/api/user/role`) to update the user's role.
+* **Role Database Persistence:** Integrates with the `/api/user/role` backend endpoint to persist the user's selected role directly to their MongoDB user document.
+* **Stateful Flow:** Features client-side persistence (`localStorage`) alongside the database update to manage user redirection flows.
 * **Modern UI & UX:** Displays contextual success/error status messages with transition states and smooth navigation redirects.
+
+### 7. Student Welcome Transition & Layout (`app/student/...`)
+* **Dedicated Sub-Layout (`app/student/layout.js`):** A custom layout that overrides the global navbar and footer, offering a clean, full-screen interactive space.
+* **Premium Welcome Overlay (`app/student/welcome/page.js`):** Displays a personalized greeting for the logged-in student user, which automatically slides up after a few seconds using custom CSS animations.
+* **Staggered Dashboard Animation (`app/student/welcome/WelcomeTransition.css`):** Features beautifully timed, staggered entrance animations for the dashboard header, summary text, and the primary "Get Started" call-to-action button.
 
 ---
 
