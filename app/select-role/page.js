@@ -37,7 +37,7 @@ export default function SelectRolePage() {
         if (selectedRole === "Student") {
           router.push("/student/welcome");
         } else {
-          router.push("/"); // Creators redirect to home or a creator onboarding page
+          router.push("/creator-onboarding"); // Creators redirect to creator onboarding page
         }
       } else {
         // Fallback if API doesn't exist yet or fails
@@ -46,7 +46,7 @@ export default function SelectRolePage() {
         if (selectedRole === "Student") {
           router.push("/student/welcome");
         } else {
-          router.push("/");
+          router.push("/creator-onboarding");
         }
       }
     } catch (error) {
@@ -56,7 +56,7 @@ export default function SelectRolePage() {
       if (selectedRole === "Student") {
         router.push("/student/welcome");
       } else {
-        router.push("/");
+        router.push("/creator-onboarding");
       }
     } finally {
       setLoading(false);
