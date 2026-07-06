@@ -49,6 +49,14 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 * **Premium Welcome Overlay (`app/student/welcome/page.js`):** Displays a personalized greeting for the logged-in student user, which automatically slides up after a few seconds using custom CSS animations.
 * **Staggered Dashboard Animation (`app/student/welcome/WelcomeTransition.css`):** Features beautifully timed, staggered entrance animations for the dashboard header, summary text, and the primary "Get Started" call-to-action button.
 
+### 8. Multi-Step Creator Onboarding Flow (`app/creator-onboarding/...`)
+* **Shared Context State Onboarding Layout (`app/creator-onboarding/layout.js`):** Implements a customized onboarding layout utilizing React Context (`OnboardingContext`) to manage unified form state dynamically across all steps.
+* **Dynamic Step & Progress Indicators:** Automatically tracks pathnames (`/step2`, `/step3`, `/step4`) to calculate progress percentage, rendering stateful step indicators and transitionary header details.
+* **Step 1 - Identity Details (`app/creator-onboarding/step1/page.js`):** Collects Legal Full Name, Date of Birth, and features a stateful Phone Verification field with a dummy OTP trigger.
+* **Step 2 - Social Proof & ID Verification (`app/creator-onboarding/step2/page.js`):** Enables single-click toggles to mock connecting Twitter/X and GitHub accounts, alongside a drag-and-drop file upload area to upload Passport or Driver's License credentials.
+* **Step 3 - Payout Selection & Terms (`app/creator-onboarding/step3/page.js`):** Configures options for Payout Methods (Stripe, PayPal, USDC Crypto Wallet), stores account details, and handles compliance checks and terms agreements.
+* **Step 4 - Onboarding Success & Compliance Review (`app/creator-onboarding/step4/page.js`):** Serves as the completion confirmation page, letting creators know their application is encrypted and currently undergoing compliance review.
+
 ---
 
 ## 🛠️ Technology Stack
