@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 
 export default function Step4() {
     return (
@@ -12,7 +13,13 @@ export default function Step4() {
                 <p style={{ marginTop: '15px', color: 'var(--accent-primary)', fontWeight: 500 }}>
                     Expected completion: 1 to 24 hours.
                 </p>
+                <div style={{ marginTop: '30px' }}>
+                    <Link href="/student/welcome" className="btn btn-next">
+                        Go to Dashboard
+                    </Link>
+                </div>
             </div>
         </div>
     );
 }
+
