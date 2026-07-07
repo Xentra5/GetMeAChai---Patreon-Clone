@@ -1,11 +1,11 @@
-import { Inter, Instrument_Serif } from "next/font/google";
+import { Plus_Jakarta_Sans, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import Navbar from "../Components/NavBar";
 import Footer from "../Components/Footer";
 import SessionWrapper from "../Components/SesssionWrapper";
 
-const inter = Inter({
-  variable: "--font-inter",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta-sans",
   subsets: ["latin"],
 });
 
@@ -22,8 +22,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${instrumentSerif.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col relative">
+    <html lang="en" className={`${plusJakartaSans.variable} ${instrumentSerif.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col relative font-sans">
         <div className="absolute inset-0 -z-10 h-full w-full items-center px-5 py-24 pointer-events-none [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)]"></div>
 
         <SessionWrapper>

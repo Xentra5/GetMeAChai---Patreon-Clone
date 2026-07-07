@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  --font-sans: var(--font-plus-jakarta-sans);
   --font-serif: var(--font-instrument-serif);
 }
 
