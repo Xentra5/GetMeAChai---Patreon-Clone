@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${plusJakartaSans.variable} ${instrumentSerif.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col relative font-sans">
-        <div className="absolute inset-0 -z-10 h-full w-full items-center px-5 py-24 pointer-events-none [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)]"></div>
+        <div className="absolute inset-0 -z-10 h-full w-full pointer-events-none bg-[#090a0f]"></div>
 
         <SessionWrapper>
           <div className="z-10 flex flex-col min-h-screen">

@@ -20,9 +20,9 @@ const NavBar = () => {
         {/* Brand Logo */}
         <Link 
           href="/" 
-          className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent hover:opacity-90 transition-opacity cursor-pointer font-serif"
+          className="text-2xl font-extrabold text-white hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-2"
         >
-          GetMEChai
+          ☕ GetMeAChai
         </Link>
         
         {/* Nav Links */}
@@ -51,9 +51,9 @@ const NavBar = () => {
               {/* Profile Trigger Button */}
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-purple-500/20 bg-purple-950/10 hover:bg-purple-950/20 transition-all text-sm font-medium text-purple-300 cursor-pointer select-none"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-800 bg-[#121316] hover:bg-[#1c1e24] transition-all text-sm font-medium text-gray-300 cursor-pointer select-none"
               >
-                <div className="w-5 h-5 rounded-full bg-purple-600 flex items-center justify-center text-white text-xs font-bold font-mono">
+                <div className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-bold font-mono">
                   {session.user.email?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <span className="max-w-[120px] truncate">{session.user.name || session.user.email}</span>
@@ -70,7 +70,7 @@ const NavBar = () => {
                     className="fixed inset-0 z-10" 
                     onClick={() => setShowDropdown(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-48 rounded-xl border border-purple-500/20 bg-black/90 p-1.5 backdrop-blur-md shadow-xl z-20 anim-fade-up">
+                  <div className="absolute right-0 mt-2 w-48 rounded-xl border border-slate-800 bg-[#121316] p-1.5 backdrop-blur-md shadow-xl z-20 anim-fade-up">
                     <div className="px-3 py-2 text-xs text-gray-500 border-b border-white/5 mb-1 truncate">
                       {session.user.email}
                     </div>
@@ -78,9 +78,9 @@ const NavBar = () => {
                     <Link
                       href="/select-role"
                       onClick={() => setShowDropdown(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg hover:bg-purple-950/30 transition-colors cursor-pointer"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
                     >
-                      <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                       Dashboard
@@ -107,14 +107,14 @@ const NavBar = () => {
               {/* Authenticated Links (Sign Up / Login) */}
               <Link
                 href="/signup"
-                className="px-4 py-2 border border-purple-500/30 rounded-lg hover:bg-purple-500/10 hover:border-purple-400 transition-all duration-200 cursor-pointer text-sm font-semibold"
+                className="px-4 py-2 border border-slate-800 rounded-lg hover:bg-[#1c1e24] transition-all duration-200 cursor-pointer text-sm font-semibold text-gray-300"
               >
                 Sign Up
               </Link>
 
               <Link
                 href="/login"
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg hover:from-purple-700 hover:to-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer text-sm font-semibold shadow-lg shadow-purple-500/10"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer text-sm font-semibold shadow-lg shadow-blue-500/10"
               >
                 Login
               </Link>

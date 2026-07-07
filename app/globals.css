@@ -2,7 +2,9 @@
 
 @theme {
   --font-sans: var(--font-plus-jakarta-sans);
-  --font-serif: var(--font-instrument-serif);
+  --font-serif: var(--font-plus-jakarta-sans);
+  --color-dashboard-bg: #090a0f;
+  --color-card-bg: #121316;
 }
 
 /* ── Entrance animations ───────────────────────────── */

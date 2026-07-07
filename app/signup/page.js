@@ -99,20 +99,20 @@ export default function SignPage() {
     };
 
     const inputClass =
-        "w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30";
+        "w-full rounded-lg border border-slate-800 bg-[#090a0f] px-4 py-3 pr-12 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20";
 
     return (
         <section className="min-h-[calc(100vh-64px)] flex items-center justify-center text-white py-12 px-4">
             <div className="w-full max-w-md">
 
                 {/* Heading */}
-                <h1 className="mb-2 text-center text-5xl font-bold font-serif">Sign Up</h1>
+                <h1 className="mb-2 text-center text-4xl font-extrabold text-white">Sign Up</h1>
                 <p className="mb-8 text-center text-gray-400 text-sm">
                     Create your account to get started
                 </p>
 
                 {/* Card */}
-                <div className="relative rounded-2xl border border-purple-500/20 bg-black/70 p-8 backdrop-blur-md shadow-[0_0_40px_rgba(139,92,246,0.1)]">
+                <div className="relative rounded-2xl border border-slate-800 bg-[#121316] p-8 shadow-xl">
                     <form onSubmit={handleSubmit} className="space-y-5">
 
                         {/* Error banner */}
@@ -134,7 +134,7 @@ export default function SignPage() {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 placeholder="Enter your username"
-                                className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+                                className="w-full rounded-lg border border-slate-800 bg-[#090a0f] px-4 py-3 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                             />
                         </div>
 
@@ -150,7 +150,7 @@ export default function SignPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="you@example.com"
-                                className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+                                className="w-full rounded-lg border border-slate-800 bg-[#090a0f] px-4 py-3 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                             />
                         </div>
 
@@ -251,7 +251,7 @@ export default function SignPage() {
                         {/* Submit */}
                         <button
                             type="submit"
-                            className="w-full rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-3 font-semibold text-white transition-all duration-200 hover:from-purple-700 hover:to-indigo-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-500/20"
+                            className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-all duration-200 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-500/10"
                         >
                             Sign Up
                         </button>
@@ -293,7 +293,7 @@ export default function SignPage() {
                         {/* Login link */}
                         <p className="text-center text-sm text-gray-400 pt-1">
                             Already have an account?{" "}
-                            <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium hover:underline transition-colors">
+                            <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium hover:underline transition-colors">
                                 Login
                             </Link>
                         </p>
