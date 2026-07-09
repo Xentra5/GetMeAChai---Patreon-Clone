@@ -1,0 +1,201 @@
+/* --- Linear/Stripe Enterprise Design System for Dashboard --- */
+.dashboard-body {
+    --bg-base: #000000;
+    --bg-surface: #0a0a0a;
+    --bg-elevated: #121212;
+    --bg-hover: #1c1c1f;
+    
+    --border-faint: rgba(255, 255, 255, 0.04);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.15);
+    
+    --brand: #8b5cf6; 
+    --brand-glow: rgba(139, 92, 246, 0.2);
+    --success: #10b981; 
+    --success-bg: rgba(16, 185, 129, 0.1);
+    --info: #3b82f6; 
+    --warning: #f59e0b; 
+    
+    --text-main: #ededed;
+    --text-muted: #a1a1aa;
+    --text-faint: #71717a;
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    
+    --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+}
+
+/* Utility Classes for Typography */
+.dashboard-body .txt-success { color: var(--success); }
+.dashboard-body .txt-warning { color: var(--warning); }
+.dashboard-body .txt-info { color: var(--info); }
+.dashboard-body .txt-muted { color: var(--text-muted); }
+.dashboard-body .fw-600 { font-weight: 600; }
+.dashboard-body .text-main { color: var(--text-main); }
+
+/* =========================================
+   1. SIDEBAR NAVIGATION
+   ========================================= */
+.dashboard-body .sidebar {
+    width: 260px; background: var(--bg-surface);
+    border-right: 1px solid var(--border-subtle);
+    display: flex; flex-direction: column;
+    position: fixed; height: 100vh; z-index: 50;
+    left: 0;
+    top: 0;
+}
+
+.dashboard-body .brand { height: 70px; display: flex; align-items: center; gap: 10px; padding: 0 1.5rem; font-weight: 700; font-size: 1.1rem; }
+.dashboard-body .brand span { color: var(--brand); font-size: 1.4rem; }
+
+.dashboard-body .nav-group { padding: 1rem; display: flex; flex-direction: column; gap: 4px; }
+.dashboard-body .nav-label { font-size: 0.75rem; color: var(--text-faint); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 0 12px 8px; }
+
+.dashboard-body .nav-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; border-radius: var(--radius-sm);
+    color: var(--text-muted); text-decoration: none;
+    font-size: 0.9rem; font-weight: 500; transition: var(--transition);
+    cursor: pointer;
+}
+.dashboard-body .nav-item:hover { background: var(--bg-hover); color: var(--text-main); }
+.dashboard-body .nav-item.active { background: var(--border-subtle); color: var(--text-main); font-weight: 600; }
+.dashboard-body .nav-icon { margin-right: 10px; font-size: 1.1rem; opacity: 0.8; }
+
+/* =========================================
+   2. MAIN APP & HEADER
+   ========================================= */
+.dashboard-body .main-wrapper { margin-left: 260px; width: calc(100% - 260px); display: flex; flex-direction: column; }
+
+.dashboard-body .header {
+    height: 70px; display: flex; justify-content: space-between; align-items: center;
+    padding: 0 2.5rem; border-bottom: 1px solid var(--border-subtle);
+    background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(20px);
+    position: sticky; top: 0; z-index: 40;
+}
+
+.dashboard-body .search-trigger {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+    padding: 6px 12px; border-radius: var(--radius-sm); width: 280px;
+    color: var(--text-faint); font-size: 0.85rem; cursor: pointer; transition: var(--transition);
+}
+.dashboard-body .search-trigger:hover { border-color: var(--border-strong); background: var(--bg-hover); color: var(--text-muted); }
+.dashboard-body .kbd { background: var(--bg-base); border: 1px solid var(--border-subtle); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
+
+.dashboard-body .header-actions { display: flex; align-items: center; gap: 1rem; }
+.dashboard-body .btn-export { background: transparent; border: 1px solid var(--border-strong); color: var(--text-main); padding: 6px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: var(--transition); }
+.dashboard-body .btn-export:hover { background: var(--bg-hover); border-color: var(--text-muted); }
+
+.dashboard-body .avatar { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border-strong); }
+
+/* =========================================
+   3. BENTO GRID LAYOUT (Smarter Cards)
+   ========================================= */
+.dashboard-body .content { padding: 2.5rem; max-width: 1400px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 2rem; }
+
+.dashboard-body .greeting h1 { font-size: 1.8rem; font-weight: 600; letter-spacing: -0.03em; margin-bottom: 8px; color: var(--text-main); }
+.dashboard-body .greeting p { color: var(--text-muted); font-size: 0.95rem; }
+
+.dashboard-body .bento-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;
+    grid-auto-rows: minmax(160px, auto);
+}
+
+.dashboard-body .card {
+    background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg); padding: 1.5rem; display: flex; flex-direction: column;
+    transition: var(--transition); position: relative; overflow: hidden;
+}
+.dashboard-body .card:hover { border-color: var(--border-strong); transform: translateY(-3px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.8); }
+
+.dashboard-body .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: auto; }
+.dashboard-body .card-title { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; }
+.dashboard-body .card-value { font-size: 2.2rem; font-weight: 600; margin-top: 8px; letter-spacing: -0.04em; color: var(--text-main); }
+
+/* 1. Revenue Card (Contextual) */
+.dashboard-body .c-revenue { grid-column: span 2; background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.05), transparent 60%), var(--bg-elevated); }
+.dashboard-body .context-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 4px; }
+.dashboard-body .insight-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+.dashboard-body .mini-stats { display: flex; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-faint); font-size: 0.8rem; color: var(--text-muted); }
+
+/* 2. Goal Card (Predictive) */
+.dashboard-body .c-goal { border-top: 3px solid var(--warning); }
+.dashboard-body .progress-bg { width: 100%; height: 6px; background: var(--bg-base); border-radius: 4px; margin: 12px 0; }
+.dashboard-body .progress-bar { height: 100%; background: var(--warning); width: 0%; border-radius: 4px; transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1); }
+.dashboard-body .status-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(245, 158, 11, 0.1); color: var(--warning); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin-top: auto;}
+
+/* 3. Views Card */
+.dashboard-body .c-views { border-top: 3px solid var(--info); }
+
+/* 4. Interactive Chart Panel */
+.dashboard-body .c-chart { grid-column: span 3; height: 420px; }
+.dashboard-body .filter-group { display: flex; gap: 8px; align-items: center; }
+.dashboard-body .dropdown { background: var(--bg-base); border: 1px solid var(--border-subtle); color: var(--text-muted); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; outline: none; }
+.dashboard-body .chart-legend { display: flex; gap: 15px; font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; }
+.dashboard-body .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+/* 5. AI Insights Panel (NEW) */
+.dashboard-body .c-insights { grid-column: span 1; background: linear-gradient(180deg, var(--bg-elevated) 0%, rgba(139, 92, 246, 0.05) 100%); }
+.dashboard-body .ai-header { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--brand); font-size: 0.95rem; margin-bottom: 15px; }
+.dashboard-body .ai-icon { animation: pulse 2s infinite; }
+@keyframes pulse { 0% { opacity: 1; text-shadow: 0 0 10px var(--brand); } 50% { opacity: 0.5; text-shadow: none; } 100% { opacity: 1; text-shadow: 0 0 10px var(--brand); } }
+
+.dashboard-body .insight-list { display: flex; flex-direction: column; gap: 12px; }
+.dashboard-body .insight-item { font-size: 0.85rem; color: var(--text-main); line-height: 1.5; padding-left: 12px; border-left: 2px solid var(--border-strong); }
+.dashboard-body .insight-action { margin-top: 15px; background: var(--brand-glow); border: 1px solid var(--brand); padding: 8px; border-radius: 6px; font-size: 0.8rem; color: #c4b5fd; cursor: pointer; text-align: center; font-weight: 500; transition: var(--transition); }
+.dashboard-body .insight-action:hover { background: var(--brand); color: white; }
+
+/* 6. Traffic Sources / Progress */
+.dashboard-body .c-sources { grid-column: span 2; }
+.dashboard-body .source-row { display: flex; align-items: center; gap: 15px; margin-top: 12px; }
+.dashboard-body .s-label { width: 80px; font-size: 0.85rem; color: var(--text-muted); }
+.dashboard-body .s-bar-bg { flex-grow: 1; height: 6px; background: var(--bg-base); border-radius: 4px; }
+.dashboard-body .s-bar-fill { height: 100%; border-radius: 4px; }
+.dashboard-body .s-value { width: 40px; text-align: right; font-size: 0.85rem; font-weight: 600; }
+
+/* 7. Activity Feed */
+.dashboard-body .c-feed { grid-column: span 2; }
+.dashboard-body .feed-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-faint); }
+.dashboard-body .feed-item:last-child { border-bottom: none; }
+.dashboard-body .feed-left { display: flex; gap: 12px; }
+.dashboard-body .f-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--border-subtle); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; }
+.dashboard-body .f-details h4 { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+.dashboard-body .f-details p { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+.dashboard-body .f-right { text-align: right; }
+.dashboard-body .f-amount { font-weight: 600; font-size: 0.9rem; }
+
+.dashboard-body .card-footer { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-faint); font-size: 0.85rem; }
+.dashboard-body .card-footer a { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: var(--transition); }
+.dashboard-body .card-footer a:hover { color: var(--text-main); }
+
+@media (max-width: 1024px) {
+    .dashboard-body .sidebar {
+        display: none;
+    }
+    .dashboard-body .main-wrapper {
+        margin-left: 0;
+        width: 100%;
+    }
+    .dashboard-body .bento-grid {
+        grid-template-columns: 1fr;
+    }
+    .dashboard-body .c-revenue,
+    .dashboard-body .c-chart,
+    .dashboard-body .c-sources,
+    .dashboard-body .c-feed {
+        grid-column: span 1;
+    }
+}

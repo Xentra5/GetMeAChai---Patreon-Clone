@@ -1,46 +1,56 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./WelcomeTransition.css";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
 
 export default function WelcomeTransition() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  // React states to handle animations and visibility
+  const [slideUp, setSlideUp] = useState(false);
+  const [overlayVisible, setOverlayVisible] = useState(true);
+  const [animateTitle, setAnimateTitle] = useState(false);
+  const [animateText, setAnimateText] = useState(false);
+  const [animateBtn, setAnimateBtn] = useState(false);
+
   useEffect(() => {
-    // If the session is still loading, do not run the timers yet
     if (status === "loading") return;
 
-    const welcomeOverlay = document.getElementById("welcome-overlay");
-    const heroTitle = document.getElementById("hero-title");
-    const heroText = document.getElementById("hero-text");
-    const heroBtn = document.getElementById("hero-btn");
+    // Prevent body scrolling during the initial transition
+    document.body.style.overflow = "hidden";
 
+    // 1. Slide up the welcome overlay
     const timer1 = setTimeout(() => {
-      if (welcomeOverlay) welcomeOverlay.classList.add("slide-up");
+      setSlideUp(true);
       document.body.style.overflow = "auto";
     }, 2200);
 
+    // 2. Animate Hero Title
     const timer2 = setTimeout(() => {
-      if (heroTitle) heroTitle.classList.add("animate-in");
+      setAnimateTitle(true);
     }, 2400);
 
+    // 3. Animate Hero Text
     const timer3 = setTimeout(() => {
-      if (heroText) heroText.classList.add("animate-in");
+      setAnimateText(true);
     }, 2600);
 
+    // 4. Animate Hero Button
     const timer4 = setTimeout(() => {
-      if (heroBtn) heroBtn.classList.add("animate-in");
+      setAnimateBtn(true);
     }, 2800);
 
+    // 5. Unmount overlay completely from DOM
     const timer5 = setTimeout(() => {
-      if (welcomeOverlay) welcomeOverlay.style.display = "none";
+      setOverlayVisible(false);
     }, 3000);
 
+    // Cleanup function to reset body styles and clear timers on unmount
     return () => {
+      document.body.style.overflow = "auto";
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
@@ -52,8 +62,8 @@ export default function WelcomeTransition() {
   // Wait until NextAuth finishes loading the session to render the UI
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-[#0b0410] text-white flex justify-center items-center font-sans">
-        <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-[#090a0f] text-white flex justify-center items-center font-sans">
+        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -63,29 +73,33 @@ export default function WelcomeTransition() {
   return (
     <>
       {/* Welcome Overlay */}
-      <div id="welcome-overlay" className="welcome-overlay">
-        <div className="welcome-content">
-          <div className="greeting-text">Welcome </div>
-          <h1 id="display-name" className="user-name">
-            {userName}
-          </h1>
+      {overlayVisible && (
+        <div id="welcome-overlay" className={`welcome-overlay ${slideUp ? "slide-up" : ""}`}>
+          <div className="welcome-content">
+            <div className="greeting-text">Welcome </div>
+            <h1 id="display-name" className="user-name">
+              {userName}
+            </h1>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Homepage */}
       <main className="homepage flex items-center justify-center min-h-screen">
         <section className="hero">
-          <h1 id="hero-title">Your Dashboard awaits.</h1>
+          <h1 id="hero-title" className={animateTitle ? "animate-in" : ""}>
+            Your Dashboard awaits.
+          </h1>
 
-          <p id="hero-text">
+          <p id="hero-text" className={animateText ? "animate-in" : ""}>
             We've set up everything based on your preferences. Dive in to start
             exploring tools designed specifically for you.
           </p>
 
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/dashboard")}
             id="hero-btn"
-            className="btn cursor-pointer border-none outline-none"
+            className={`btn cursor-pointer border-none outline-none ${animateBtn ? "animate-in" : ""}`}
           >
             Get Started
           </button>

@@ -22,13 +22,34 @@ const UserSchema = new mongoose.Schema(
             default: "student",
             enum: ["student", "creator"],
         },
+        monthlyGoal: {
+            type: Number,
+            default: 50000,
+        },
+        profileViews: {
+            type: Number,
+            default: 0, // Default to 0 views for new user accounts
+        },
+        avatarUrl: {
+            type: String,
+            default: "https://i.pravatar.cc/100?img=11",
+        },
+        twitterHandle: {
+            type: String,
+            default: "",
+        },
+        githubHandle: {
+            type: String,
+            default: "",
+        },
     },
     { timestamps: true } // Automatically creates createdAt and updatedAt fields
 );
 
-// This checks if the model already exists in mongoose to prevent recompiling it
-const User = mongoose.models && mongoose.models.User && typeof mongoose.models.User === "function"
-  ? mongoose.models.User
-  : mongoose.model("User", UserSchema);
+// Delete cached model in Next.js development to force fresh compilation with updated schema fields
+if (mongoose.models && mongoose.models.User) {
+  delete mongoose.models.User;
+}
+const User = mongoose.model("User", UserSchema);
 
 export default User;

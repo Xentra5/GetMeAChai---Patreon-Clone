@@ -1,10 +1,10 @@
 :root {
-    --bg-dark: #0b0410;
-    --bg-surface: #1a0b2e;
+    --bg-dark: #090a0f;
+    --bg-surface: #121316;
     --text-main: #ffffff;
-    --text-muted: #b8a5d6;
-    --gradient-primary: linear-gradient(135deg, #a855f7, #ec4899);
-    --font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --text-muted: #94a3b8;
+    --gradient-primary: linear-gradient(135deg, #3b82f6, #6366f1);
+    --font-family: var(--font-plus-jakarta-sans), "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
@@ -87,7 +87,7 @@ body {
     display: flex;
     flex-direction: column;
     background-image: radial-gradient(circle at top center,
-            rgba(168, 85, 247, 0.1),
+            rgba(59, 130, 246, 0.15),
             transparent 50%);
 }
 
@@ -141,7 +141,8 @@ nav {
 .hero h1 {
     font-size: 4rem;
     line-height: 1.2;
-    margin: 0 0 1.5rem 0; /* Reset default browser margin and add space below */
+    margin: 0 0 1.5rem 0;
+    /* Reset default browser margin and add space below */
 }
 
 .hero p {
@@ -149,11 +150,13 @@ nav {
     color: var(--text-muted);
     font-size: 1.1rem;
     line-height: 1.6;
-    margin: 0 0 2.5rem 0; /* Reset default browser margin and add space below */
+    margin: 0 0 2.5rem 0;
+    /* Reset default browser margin and add space below */
 }
 
 .btn {
-    margin-top: 0; /* Handled by paragraph's bottom margin */
+    margin-top: 0;
+    /* Handled by paragraph's bottom margin */
     background: var(--gradient-primary);
     padding: 15px 35px;
     border-radius: 30px;

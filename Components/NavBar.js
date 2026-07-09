@@ -10,8 +10,8 @@ const NavBar = () => {
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Hide the Navbar on student-only pages like the welcome screen
-  if (pathname?.startsWith("/student")) return null;
+  // Hide the Navbar on student-only pages or dashboard
+  if (pathname?.startsWith("/student") || pathname?.startsWith("/dashboard")) return null;
 
   return (
     <nav className="bg-black/50 backdrop-blur-md border-b border-white/10 text-white sticky top-0 z-50 select-none">
