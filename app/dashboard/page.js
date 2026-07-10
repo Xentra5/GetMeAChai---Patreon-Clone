@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { Chart, registerables } from "chart.js";
 import {
   LayoutDashboard,
@@ -13,7 +13,8 @@ import {
   Download,
   Sparkles,
   ChevronRight,
-  Pencil
+  Pencil,
+  LogOut
 } from "lucide-react";
 import "./dashboard.css";
 
@@ -42,6 +43,7 @@ export default function Dashboard() {
   const [newGoal, setNewGoal] = useState("");
 
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   const handleSaveSettings = async () => {
     if (isNaN(Number(newGoal)) || Number(newGoal) < 0) {
@@ -308,13 +310,13 @@ export default function Dashboard() {
               Overview
             </span>
           </Link>
-          <Link href="#" className="nav-item">
+          <Link href="/dashboard/payouts" className="nav-item">
             <span className="flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
               Revenue & Payouts
             </span>
           </Link>
-          <Link href="#" className="nav-item">
+          <Link href="/dashboard/audience-insights" className="nav-item">
             <span className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Audience Insights
@@ -337,11 +339,50 @@ export default function Dashboard() {
             <button className="btn-export">
               <Download className="w-4 h-4" /> Export CSV
             </button>
-            <img
-              src={stats.avatarUrl}
-              className="avatar"
-              alt="Profile"
-            />
+            <div className="profile-container" style={{ position: "relative" }}>
+              <button
+                className="profile-trigger"
+                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+              >
+                {stats.avatarUrl && stats.avatarUrl !== "https://i.pravatar.cc/100?img=11" ? (
+                  <img
+                    src={stats.avatarUrl}
+                    className="avatar"
+                    alt="Profile"
+                  />
+                ) : (
+                  <div className="avatar-letter">
+                    {(stats.username || stats.email || "U").charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </button>
+
+              {showProfileDropdown && (
+                <>
+                  <div
+                    className="dropdown-backdrop"
+                    onClick={() => setShowProfileDropdown(false)}
+                    style={{ position: "fixed", inset: 0, zIndex: 998 }}
+                  />
+                  <div className="profile-dropdown">
+                    <div className="dropdown-user-info">
+                      <span className="dropdown-username">{stats.username}</span>
+                      <span className="dropdown-email">{stats.email}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        signOut();
+                      }}
+                      className="dropdown-item logout"
+                    >
+                      <LogOut className="w-4 h-4" /> Sign Out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </header>
 
