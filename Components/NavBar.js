@@ -76,7 +76,7 @@ const NavBar = () => {
                     </div>
                     
                     <Link
-                      href="/select-role"
+                      href="/dashboard"
                       onClick={() => setShowDropdown(false)}
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
                     >

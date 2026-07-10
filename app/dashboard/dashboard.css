@@ -68,15 +68,57 @@
     color: var(--text-muted); text-decoration: none;
     font-size: 0.9rem; font-weight: 500; transition: var(--transition);
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.dashboard-body .nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    height: 60%;
+    width: 3px;
+    background: var(--brand);
+    border-radius: 0 4px 4px 0;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: left;
 }
 .dashboard-body .nav-item:hover { background: var(--bg-hover); color: var(--text-main); }
-.dashboard-body .nav-item.active { background: var(--border-subtle); color: var(--text-main); font-weight: 600; }
+.dashboard-body .nav-item:hover::before { transform: translateY(-50%) scaleY(0.5); }
+.dashboard-body .nav-item.active { 
+    background: var(--border-subtle); 
+    color: var(--text-main); 
+    font-weight: 600;
+    box-shadow: inset 1px 0 0 0 var(--brand);
+}
+.dashboard-body .nav-item.active::before {
+    transform: translateY(-50%) scaleY(1);
+    background: var(--brand);
+}
 .dashboard-body .nav-icon { margin-right: 10px; font-size: 1.1rem; opacity: 0.8; }
 
 /* =========================================
    2. MAIN APP & HEADER
    ========================================= */
-.dashboard-body .main-wrapper { margin-left: 260px; width: calc(100% - 260px); display: flex; flex-direction: column; }
+@keyframes dashboardFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dashboard-body .main-wrapper { 
+    margin-left: 260px; 
+    width: calc(100% - 260px); 
+    display: flex; 
+    flex-direction: column; 
+    animation: dashboardFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
 .dashboard-body .header {
     height: 70px; display: flex; justify-content: space-between; align-items: center;

@@ -24,7 +24,7 @@ export default function LoginPage() {
       if (res?.error) {
         setError(res.error);
       } else {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -129,7 +129,7 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 gap-3">
               {/* GitHub */}
               <button
-                onClick={() => signIn("github")}
+                onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
                 type="button"
                 className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02] active:scale-[0.98]"
               >
@@ -153,7 +153,7 @@ export default function LoginPage() {
 
               {/* Google */}
               <button
-                onClick={() => signIn("google")}
+                onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
                 type="button"
                 className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02] active:scale-[0.98]"
               >
