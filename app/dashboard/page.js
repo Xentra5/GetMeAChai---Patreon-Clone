@@ -14,7 +14,10 @@ import {
   Sparkles,
   ChevronRight,
   Pencil,
-  LogOut
+  LogOut,
+  Compass,
+  User,
+  Settings
 } from "lucide-react";
 import "./dashboard.css";
 
@@ -320,6 +323,27 @@ export default function Dashboard() {
             <span className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Audience Insights
+            </span>
+          </Link>
+        </div>
+        <div className="nav-group">
+          <div className="nav-label">Platform Views</div>
+          <Link href="/dashboard/platform?view=search" className="nav-item">
+            <span className="flex items-center gap-2">
+              <Compass className="w-4 h-4" />
+              Search Creators
+            </span>
+          </Link>
+          <Link href="/dashboard/platform?view=profile" className="nav-item">
+            <span className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Public Profile
+            </span>
+          </Link>
+          <Link href="/dashboard/platform?view=settings" className="nav-item">
+            <span className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Settings
             </span>
           </Link>
         </div>
