@@ -8,18 +8,21 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 
 ### 1. Modern Layout & Global Navigation
 * **Root Layout (`app/layout.js`):** Integrated Google Fonts (`Inter` for primary typography, `Instrument Serif` for stylized serif elements). Features a beautiful deep-space radial gradient background (`radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)`) that gives the app a premium, modern aesthetic.
-* **Glassmorphic Navigation Bar (`Components/NavBar.js`):** Built a responsive sticky navbar with backdrop blur (`backdrop-blur-md`), clean navigation links (Home, About, Contact), and call-to-action buttons for signing up and logging in.
-* **Styled Footer (`Components/Footer.js`):** Added a minimal, cohesive footer displaying copyright and branding info with gradient backgrounds.
+* **Glassmorphic Navigation Bar (`Components/NavBar.js`):** Built a responsive sticky navbar with backdrop blur (`backdrop-blur-md`), clean navigation links (Home, About, Contact), and stateful buttons for user sessions (Signup, Login, Dashboard, Role Selection).
+* **Styled Footer (`Components/Footer.js`):** Minimal, cohesive footer displaying copyright and branding info with gradient backgrounds.
+* **Session Wrapper (`Components/SesssionWrapper.js`):** Encapsulates NextAuth's `SessionProvider` to enable application-wide session management.
 
 ### 2. High-Converting Landing Page (`app/page.js`)
 * **Hero Section:** Features smooth fade-in animations and text highlighting the platform's mission.
-* **Interactive CTAs:** Includes a stunning, animated "Start Here" button with slide-in shimmer, scale transitions, and hover-triggered backdrop highlights.
+* **Interactive CTAs:** Includes an animated "Start Here" button with slide-in shimmer, scale transitions, and hover-triggered backdrop highlights.
 * **Key Stats Dashboard:** Displays platform impact stats (25K+ Creators Empowered, 1.8M+ Chais Bought, 500K+ Supporters Worldwide, and ₹12Cr+ Earnings Generated) in neatly designed cards with custom emoji badges.
 
 ### 3. Secure Database & Authentication System
 * **Database Connection (`db/connectDb.js`):** Implemented a global cached MongoDB connection using **Mongoose** to prevent socket connection exhaustion during Next.js hot-reloads in development.
 * **User Schema (`models/user.js`):** Defines user credentials with clean schemas including email normalization (lowercase, trim) and timestamps.
-* **Credentials Registration API (`app/api/signup/route.js`):** Offers a secure POST endpoint for registering new users. Includes input validation, email duplicate checks, and password hashing using `bcryptjs`.
+* **Payment Schema (`models/Payment.js`):** Schema for user support payments, tracking supporting user name, target creator (`to_username`), amount, custom message, and status (`pending`, `success`, `failed`).
+* **Withdrawal Schema (`models/Withdrawal.js`):** Schema tracking payout withdrawals for creators, detailing amount, withdrawal method (e.g., Stripe, PayPal), and transfer status.
+* **Credentials Registration API (`app/api/signup/route.js`):** Secure POST endpoint for registering new users. Includes input validation, email duplicate checks, and password hashing using `bcryptjs`.
 * **NextAuth Config (`app/api/auth/[...nextauth]/route.js`):** Standardized NextAuth setup utilizing **JWT session strategy** with support for three auth providers:
   * **Google OAuth** for fast single-click social sign-on.
   * **GitHub OAuth** for developers and creators.
@@ -57,6 +60,25 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 * **Step 3 - Payout Selection & Terms (`app/creator-onboarding/step3/page.js`):** Configures options for Payout Methods (Stripe, PayPal, USDC Crypto Wallet), stores account details, and handles compliance checks and terms agreements.
 * **Step 4 - Onboarding Success & Compliance Review (`app/creator-onboarding/step4/page.js`):** Serves as the completion confirmation page, letting creators know their application is encrypted and currently undergoing compliance review.
 
+### 9. Unified Creator Dashboard System (`app/dashboard/...`)
+* **Core Dashboard Page (`app/dashboard/page.js`):**
+  * Displays metrics cards for **Monthly Revenue**, **Goal Progress**, and **Profile Views** with real-time numeric counting animation (`animateValue`).
+  * Features an interactive **Chart.js** line chart displaying actual weekly revenue side-by-side with target revenue and projected future earnings.
+  * Includes a **Settings Modal** to update the user's monthly funding goal, triggering instant server-side recalculation of goals.
+* **Audience Insights Dashboard (`app/dashboard/audience-insights/page.js`):**
+  * Provides granular support analytics: total supporters count, support value distribution brackets, and conversion rates.
+  * Features a **Top Supporters Leaderboard** showing active backers.
+  * Integrates with the backend stats API to dynamically fetch audience metadata.
+* **Payouts Dashboard (`app/dashboard/payouts/page.js`):**
+  * Displays financial indicators: **Available Balance**, **Pending Clearance**, and **Total Withdrawn**.
+  * Contains a **Withdrawal Request Modal** allowing creators to instantly request payouts to their configured methods (Stripe, PayPal, Crypto).
+  * Includes transaction logs with search, time frame, and status-based filtering options.
+* **Unified Platform Hub (`app/dashboard/platform/page.js`):**
+  * Acts as a single-page application (SPA) hub coordinating **Search Creators**, **Public Profile**, and **Settings** views.
+  * **Search Creators Component (`Components/Platform/SearchCreators.js`):** Displays real-time database queries of active creators, categorizing by profession (Design, Engineering, Writing, Video) and showing animated shimmer states during fetching.
+  * **Public Profile Component (`Components/Platform/PublicProfile.js`):** Public-facing page rendering creator bio, metrics, social links, custom message boards, and a support section where users can make mock payments (chais support).
+  * **Settings Form Component (`Components/Platform/SettingsForm.js`):** Comprehensive user control center partitioned into General Settings, Public Profile, Payout Methods, and Security configurations.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -66,6 +88,7 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 * **Styling:** Tailwind CSS v4 (using `@tailwindcss/postcss`)
 * **Database:** MongoDB & Mongoose
 * **Authentication:** NextAuth.js & bcryptjs
+* **Analytics/Charts:** Chart.js
 * **Icons:** Lucide React
 * **Fonts:** Google Fonts (Inter, Instrument Serif)
 
