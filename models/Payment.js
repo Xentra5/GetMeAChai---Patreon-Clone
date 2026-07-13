@@ -6,6 +6,7 @@ const PaymentSchema = new mongoose.Schema(
     to_username: { type: String, required: true },
     amount: { type: Number, required: true },
     message: { type: String },
+    from_email: { type: String, default: "" },
     status: { type: String, enum: ["pending", "success", "failed"], default: "pending" },
   },
   { timestamps: true }
