@@ -1,13 +1,27 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSession } from "next-auth/react";
 import "../../app/platform/platform.css";
 
 export default function PublicProfile({ creator }) {
+  const { data: session } = useSession();
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(!creator);
   const [selectedAmount, setSelectedAmount] = useState(500);
   const [customAmount, setCustomAmount] = useState("");
+  const [supportMessage, setSupportMessage] = useState("");
+  const [feed, setFeed] = useState([]);
+  const [toasts, setToasts] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+
+  const addToast = (message, type = "success") => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3000);
+  };
 
   React.useEffect(() => {
     if (!creator) {
@@ -28,14 +42,6 @@ export default function PublicProfile({ creator }) {
     }
   }, [creator]);
 
-  if (loading) {
-    return (
-      <div className="platform-view-section" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "50vh" }}>
-        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   const currentCreator = creator || currentUser || {
     name: "User",
     email: "user@example.com",
@@ -44,10 +50,6 @@ export default function PublicProfile({ creator }) {
     githubHandle: "",
     monthlyGoal: 0,
     profileViews: 0,
-  };
-
-  const handleAmountClick = (amount) => {
-    setSelectedAmount(amount);
   };
 
   const getButtonText = () => {
@@ -68,6 +70,79 @@ export default function PublicProfile({ creator }) {
   const twitterClean = currentCreator.twitterHandle ? currentCreator.twitterHandle.replace("@", "") : "";
   const githubClean = currentCreator.githubHandle ? currentCreator.githubHandle.replace("@", "") : "";
   const creatorHandle = `@${twitterClean || githubClean || creatorName.toLowerCase().replace(/\s+/g, "")}`;
+  const creatorSlug = creatorName.toLowerCase().replace(/\s+/g, "");
+
+  // Load Feed
+  React.useEffect(() => {
+    async function loadFeed() {
+      if (!creatorSlug) return;
+      try {
+        const res = await fetch(`/api/support?creator=${creatorSlug}`);
+        if (res.ok) {
+          const data = await res.json();
+          setFeed(data);
+        }
+      } catch (err) {
+        console.error("Error loading support feed:", err);
+      }
+    }
+    loadFeed();
+  }, [creatorSlug]);
+
+  if (loading) {
+    return (
+      <div className="platform-view-section" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "50vh" }}>
+        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  const handleAmountClick = (amount) => {
+    setSelectedAmount(amount);
+  };
+
+  const handleSupport = async () => {
+    const amount = selectedAmount === "Custom" ? Number(customAmount) : Number(selectedAmount);
+    if (!amount || isNaN(amount) || amount <= 0) {
+      addToast("Please enter or select a valid amount.", "error");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: session?.user?.name || session?.user?.email?.split("@")[0] || "Anonymous Supporter",
+          to_username: creatorSlug,
+          amount: amount,
+          message: supportMessage,
+        }),
+      });
+
+      if (res.ok) {
+        addToast(`Successfully supported with ₹${amount}!`, "success");
+        setSupportMessage("");
+        setCustomAmount("");
+        
+        // Refresh feed
+        const feedRes = await fetch(`/api/support?creator=${creatorSlug}`);
+        if (feedRes.ok) {
+          const data = await feedRes.json();
+          setFeed(data);
+        }
+      } else {
+        const errData = await res.json();
+        addToast(errData.error || "Failed to process support transaction.", "error");
+      }
+    } catch (err) {
+      console.error("Error processing support payment:", err);
+      addToast("Failed to connect to the server.", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="platform-view-section">
@@ -130,14 +205,23 @@ export default function PublicProfile({ creator }) {
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           <div className="platform-card platform-support-card">
             <h2>Support {creatorName.split(" ")[0]}</h2>
-            <p>Choose an amount to support their creative work.</p>
+            <p>Choose an amount and leave a friendly message.</p>
+
+            <div className="platform-custom-input-container" style={{ marginTop: "1.25rem", marginBottom: "0.75rem" }}>
+              <input
+                type="text"
+                placeholder="Say something nice..."
+                value={supportMessage}
+                onChange={(e) => setSupportMessage(e.target.value)}
+                style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "var(--platform-text-main)" }}
+              />
+            </div>
 
             <div className="platform-amount-selector">
               {[100, 500, 1000, "Custom"].map((amount) => (
                 <button
                   key={amount}
-                  className={`platform-amount-btn ${selectedAmount === amount ? "active" : ""
-                    }`}
+                  className={`platform-amount-btn ${selectedAmount === amount ? "active" : ""}`}
                   onClick={() => handleAmountClick(amount)}
                 >
                   {amount === "Custom" ? "Custom" : `₹${amount}`}
@@ -153,33 +237,69 @@ export default function PublicProfile({ creator }) {
                   placeholder="Enter custom amount"
                   value={customAmount}
                   onChange={(e) => setCustomAmount(e.target.value)}
+                  style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "var(--platform-text-main)" }}
                 />
               </div>
             )}
 
-            <button className="platform-btn-primary" style={{ width: "100%" }}>
-              {getButtonText()}
+            <button 
+              className="platform-btn-primary" 
+              style={{ width: "100%" }}
+              onClick={handleSupport}
+              disabled={submitting}
+            >
+              {submitting ? "Processing..." : getButtonText()}
             </button>
           </div>
 
           <div className="platform-card" style={{ padding: 0 }}>
-            <div className="platform-feed-card">
-              <div className="platform-fc-header">
-                <span className="platform-fc-title">Welcome to my profile Page! 🎉</span>
-                <span className="platform-fc-time">Just now</span>
+            <h3 style={{ fontSize: "1.1rem", padding: "1.5rem 1.5rem 0.5rem 1.5rem", fontWeight: 600 }}>
+              Supporter Feed
+            </h3>
+            {feed.length === 0 ? (
+              <div style={{ padding: "1.5rem", color: "var(--platform-text-faint)", fontSize: "0.9rem" }}>
+                No support messages yet. Be the first to support!
               </div>
-              <p className="platform-fc-body">
-                Thank you for visiting my creator profile on GetMeAChai! Feel free to support my projects using the payment widget above.
-              </p>
-              <div className="platform-fc-media"></div>
-              <div className="platform-fc-actions">
-                <span>❤️ 12</span>
-                <span>💬 2</span>
-              </div>
-            </div>
+            ) : (
+              feed.map((item) => (
+                <div key={item._id} className="platform-feed-card">
+                  <div className="platform-fc-header">
+                    <span className="platform-fc-title">{item.name}</span>
+                    <span className="platform-fc-time">
+                      {new Date(item.createdAt).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  <p className="platform-fc-body">
+                    {item.message || "Supported the creator! ☕"}
+                  </p>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem" }}>
+                    <span style={{ color: "var(--platform-brand)", fontWeight: 600 }}>
+                      Bought Chai (₹{item.amount})
+                    </span>
+                    <span style={{ color: "var(--platform-text-faint)" }}>❤️ Verified</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
+      </div>
+
+      {/* Floating Toast Notification Containers */}
+      <div className="platform-toast-container">
+        {toasts.map((toast) => (
+          <div key={toast.id} className={`platform-toast ${toast.type}`}>
+            <span>{toast.type === "success" ? "✓" : "⚠"}</span>
+            <span>{toast.message}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
+
