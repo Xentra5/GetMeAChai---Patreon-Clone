@@ -8,60 +8,75 @@ export default function SearchCreators({ onSelectProfile }) {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("views");
 
   const categories = ["All", "Design", "Engineering", "Writing", "Video"];
 
-  // Fetch real creators from database on mount
-  useEffect(() => {
-    async function getCreators() {
-      try {
-        const response = await fetch("/api/creators");
-        if (response.ok) {
-          const data = await response.json();
-          setCreators(data);
-        }
-      } catch (error) {
-        console.error("Error loading creators:", error);
-      } finally {
-        setLoading(false);
+  async function getCreators() {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (searchQuery.trim()) {
+        params.append("q", searchQuery.trim());
       }
+      if (activeCategory !== "All") {
+        params.append("category", activeCategory);
+      }
+      params.append("sortBy", sortBy);
+
+      const response = await fetch(`/api/creators?${params.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCreators(data);
+      }
+    } catch (error) {
+      console.error("Error loading creators:", error);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  // Fetch real creators when category or sort option changes
+  useEffect(() => {
     getCreators();
-  }, []);
+  }, [activeCategory, sortBy]);
 
-  const filteredCreators = creators.filter((creator) => {
-    // Basic search filtering
-    const searchLower = searchQuery.toLowerCase();
-    const nameMatch = (creator.name || "").toLowerCase().includes(searchLower);
-    const handleMatch = (creator.twitterHandle || creator.githubHandle || "")
-      .toLowerCase()
-      .includes(searchLower);
-    const emailMatch = (creator.email || "").toLowerCase().includes(searchLower);
-
-    const matchesSearch = nameMatch || handleMatch || emailMatch;
-
-    // Custom categories assignment based on details or random if not defined
-    // In a real application, category would be a field on the User schema.
-    const mockCategory = creator.twitterHandle ? "Design" : "Engineering";
-    const matchesCategory =
-      activeCategory === "All" || mockCategory === activeCategory;
-
-    return matchesSearch && matchesCategory;
-  });
+  const handleSearchSubmit = (e) => {
+    if (e) e.preventDefault();
+    getCreators();
+  };
 
   return (
     <div className="platform-view-section">
       <div className="platform-search-hero">
         <h1>Discover Creators</h1>
-        <div className="platform-big-search-box">
+        <form onSubmit={handleSearchSubmit} className="platform-big-search-box">
           <input
             type="text"
             placeholder="Search by name, handle, or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button className="platform-btn-search">Search</button>
-        </div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{
+              background: "#111",
+              border: "1px solid var(--platform-border-input)",
+              color: "var(--platform-text-main)",
+              borderRadius: "4px",
+              padding: "8px 12px",
+              marginRight: "8px",
+              fontSize: "0.85rem",
+              outline: "none"
+            }}
+          >
+            <option value="views">Sort by: Popularity</option>
+            <option value="name">Sort by: Name (A-Z)</option>
+            <option value="goal">Sort by: Funding Goal</option>
+          </select>
+          <button type="submit" className="platform-btn-search">Search</button>
+        </form>
         <div className="platform-filter-ribbon">
           {categories.map((cat) => (
             <button
@@ -90,8 +105,8 @@ export default function SearchCreators({ onSelectProfile }) {
         </div>
       ) : (
         <div className="platform-creator-grid">
-          {filteredCreators.length > 0 ? (
-            filteredCreators.map((creator, index) => {
+          {creators.length > 0 ? (
+            creators.map((creator, index) => {
               // Accent borders cycle
               const accentClasses = [
                 "platform-card-accent-brand",
@@ -130,7 +145,7 @@ export default function SearchCreators({ onSelectProfile }) {
                     </div>
                   </div>
                   <p className="platform-cc-bio">
-                    {creator.bio || `Creative designer sharing custom widgets and digital content on GetMeAChai.`}
+                    {creator.bio || `Creative ${creator.category || "designer"} sharing updates and digital content on GetMeAChai.`}
                   </p>
                   <div className="platform-cc-footer">
                     <span className="platform-cc-stats">

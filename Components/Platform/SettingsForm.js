@@ -11,6 +11,7 @@ export default function SettingsForm() {
   // Form states
   const [displayName, setDisplayName] = useState("");
   const [monthlyGoal, setMonthlyGoal] = useState("");
+  const [category, setCategory] = useState("Engineering");
   const [twitterHandle, setTwitterHandle] = useState("");
   const [githubHandle, setGithubHandle] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("https://i.pravatar.cc/100?img=11");
@@ -35,6 +36,7 @@ export default function SettingsForm() {
           const data = await response.json();
           setDisplayName(data.name || "");
           setMonthlyGoal(data.monthlyGoal || "");
+          setCategory(data.category || "Engineering");
           setTwitterHandle(data.twitterHandle || "");
           setGithubHandle(data.githubHandle || "");
           setAvatarUrl(data.avatarUrl || "https://i.pravatar.cc/100?img=11");
@@ -61,6 +63,7 @@ export default function SettingsForm() {
         body: JSON.stringify({
           name: displayName,
           monthlyGoal: monthlyGoal ? Number(monthlyGoal) : 0,
+          category,
           twitterHandle,
           githubHandle,
         }),
@@ -176,6 +179,21 @@ export default function SettingsForm() {
                     onChange={(e) => setMonthlyGoal(e.target.value)}
                     placeholder="Enter monthly goal amount"
                   />
+                </div>
+
+                <div className="platform-form-group">
+                  <label>Profile Category</label>
+                  <select
+                    className="platform-form-input"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    style={{ background: "#000", border: "1px solid var(--platform-border-input)" }}
+                  >
+                    <option value="Design">Design</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Writing">Writing</option>
+                    <option value="Video">Video</option>
+                  </select>
                 </div>
 
                 <div className="platform-form-group">

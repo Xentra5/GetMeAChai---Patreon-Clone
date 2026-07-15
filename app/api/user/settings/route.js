@@ -21,6 +21,7 @@ export async function GET() {
       name: user.name || "",
       email: user.email,
       monthlyGoal: user.monthlyGoal,
+      category: user.category || "Engineering",
       twitterHandle: user.twitterHandle || "",
       githubHandle: user.githubHandle || "",
       avatarUrl: user.avatarUrl || "https://i.pravatar.cc/100?img=11",
@@ -40,7 +41,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { monthlyGoal, twitterHandle, githubHandle, name } = await request.json();
+    const { monthlyGoal, twitterHandle, githubHandle, name, category } = await request.json();
 
     // Validate monthlyGoal if provided
     if (monthlyGoal !== undefined) {
@@ -60,6 +61,7 @@ export async function POST(request) {
     if (twitterHandle !== undefined) updateFields.twitterHandle = twitterHandle.trim();
     if (githubHandle !== undefined) updateFields.githubHandle = githubHandle.trim();
     if (name !== undefined) updateFields.name = name.trim();
+    if (category !== undefined) updateFields.category = category.trim();
 
     const user = await User.findOneAndUpdate(
       { email: session.user.email.toLowerCase() },

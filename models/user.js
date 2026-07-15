@@ -26,6 +26,11 @@ const UserSchema = new mongoose.Schema(
             type: Number,
             default: 50000,
         },
+        category: {
+            type: String,
+            default: "Engineering",
+            enum: ["Design", "Engineering", "Writing", "Video"],
+        },
         profileViews: {
             type: Number,
             default: 0, // Default to 0 views for new user accounts
