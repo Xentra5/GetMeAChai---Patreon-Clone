@@ -333,8 +333,14 @@ export default function AudienceInsights() {
               </div>
               <div className="c-value">{Math.floor(totalSupporters).toLocaleString("en-IN")}</div>
               <div className="c-trend">
-                <span className="trend-badge" style={{ background: "rgba(16, 185, 129, 0.15)", color: "var(--success)" }}>
-                  ▲ 8%
+                <span 
+                  className="trend-badge" 
+                  style={{ 
+                    background: (data.trends?.supporters ?? 0) >= 0 ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)", 
+                    color: (data.trends?.supporters ?? 0) >= 0 ? "var(--success)" : "#ef4444" 
+                  }}
+                >
+                  {(data.trends?.supporters ?? 0) >= 0 ? "▲" : "▼"} {Math.abs(data.trends?.supporters ?? 0).toFixed(1)}%
                 </span>{" "}
                 vs last month
               </div>
@@ -348,8 +354,14 @@ export default function AudienceInsights() {
               </div>
               <div className="c-value">{conversionRate.toFixed(1)}%</div>
               <div className="c-trend">
-                <span className="trend-badge" style={{ background: "rgba(16, 185, 129, 0.15)", color: "var(--success)" }}>
-                  ▲ 1.1%
+                <span 
+                  className="trend-badge" 
+                  style={{ 
+                    background: (data.trends?.conversion ?? 0) >= 0 ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)", 
+                    color: (data.trends?.conversion ?? 0) >= 0 ? "var(--success)" : "#ef4444" 
+                  }}
+                >
+                  {(data.trends?.conversion ?? 0) >= 0 ? "▲" : "▼"} {Math.abs(data.trends?.conversion ?? 0).toFixed(1)}%
                 </span>{" "}
                 pageview to support
               </div>
@@ -363,8 +375,14 @@ export default function AudienceInsights() {
               </div>
               <div className="c-value">{Math.floor(returningSupporters)}%</div>
               <div className="c-trend">
-                <span className="trend-badge" style={{ background: "rgba(16, 185, 129, 0.15)", color: "var(--success)" }}>
-                  ▲ 5%
+                <span 
+                  className="trend-badge" 
+                  style={{ 
+                    background: (data.trends?.returning ?? 0) >= 0 ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)", 
+                    color: (data.trends?.returning ?? 0) >= 0 ? "var(--success)" : "#ef4444" 
+                  }}
+                >
+                  {(data.trends?.returning ?? 0) >= 0 ? "▲" : "▼"} {Math.abs(data.trends?.returning ?? 0).toFixed(1)}%
                 </span>{" "}
                 high loyalty rate
               </div>
@@ -378,8 +396,14 @@ export default function AudienceInsights() {
               </div>
               <div className="c-value">₹{Math.floor(avgValue).toLocaleString("en-IN")}</div>
               <div className="c-trend">
-                <span className="trend-badge" style={{ background: "rgba(255, 255, 255, 0.1)", color: "var(--text-muted)" }}>
-                  - 0%
+                <span 
+                  className="trend-badge" 
+                  style={{ 
+                    background: (data.trends?.avgValue ?? 0) >= 0 ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)", 
+                    color: (data.trends?.avgValue ?? 0) >= 0 ? "var(--success)" : "#ef4444" 
+                  }}
+                >
+                  {(data.trends?.avgValue ?? 0) >= 0 ? "▲" : "▼"} {Math.abs(data.trends?.avgValue ?? 0).toFixed(1)}%
                 </span>{" "}
                 stable average
               </div>
