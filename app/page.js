@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import tea from "../images/tea.png";
@@ -12,6 +12,30 @@ export default function Home() {
   const [username, setUsername] = useState("");
   const [selectedChais, setSelectedChais] = useState(3);
   const [claimed, setClaimed] = useState(false);
+  const [globalStats, setGlobalStats] = useState({
+    creatorsCount: 0,
+    totalEarnings: 0,
+    chaisBought: 0,
+    supportersCount: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const res = await fetch("/api/landing-stats");
+        if (res.ok) {
+          const data = await res.json();
+          setGlobalStats(data);
+        }
+      } catch (err) {
+        console.error("Error loading landing stats:", err);
+      } finally {
+        setStatsLoading(false);
+      }
+    }
+    loadStats();
+  }, []);
 
   const handleClaim = (e) => {
     e.preventDefault();
@@ -164,6 +188,47 @@ export default function Home() {
           </div>
         </div>
 
+      </section>
+
+      {/* ── KEY STATS DASHBOARD (Live Database Statistics) ── */}
+      <section className="max-w-7xl mx-auto px-6 py-8 anim-fade-up">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="border border-slate-800 bg-[#121316]/60 backdrop-blur-md p-6 rounded-2xl flex flex-col items-center justify-center text-center">
+            <span className="text-3xl font-extrabold text-blue-400">
+              {statsLoading ? "..." : globalStats.creatorsCount.toLocaleString()}
+            </span>
+            <span className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-2">
+              🚀 Creators Empowered
+            </span>
+          </div>
+
+          <div className="border border-slate-800 bg-[#121316]/60 backdrop-blur-md p-6 rounded-2xl flex flex-col items-center justify-center text-center">
+            <span className="text-3xl font-extrabold text-indigo-400">
+              {statsLoading ? "..." : globalStats.chaisBought.toLocaleString()}
+            </span>
+            <span className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-2">
+              ☕ Chais Bought
+            </span>
+          </div>
+
+          <div className="border border-slate-800 bg-[#121316]/60 backdrop-blur-md p-6 rounded-2xl flex flex-col items-center justify-center text-center">
+            <span className="text-3xl font-extrabold text-purple-400">
+              {statsLoading ? "..." : globalStats.supportersCount.toLocaleString()}
+            </span>
+            <span className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-2">
+              👥 Supporters Worldwide
+            </span>
+          </div>
+
+          <div className="border border-slate-800 bg-[#121316]/60 backdrop-blur-md p-6 rounded-2xl flex flex-col items-center justify-center text-center">
+            <span className="text-3xl font-extrabold text-emerald-400">
+              ₹{statsLoading ? "..." : globalStats.totalEarnings.toLocaleString("en-IN")}
+            </span>
+            <span className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-2">
+              💰 Earnings Generated
+            </span>
+          </div>
+        </div>
       </section>
 
       {/* ── SECTION 2: How It Works & Transparency ── */}
