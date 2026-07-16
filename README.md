@@ -12,55 +12,54 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 * **Styled Footer (`Components/Footer.js`):** Minimal, cohesive footer displaying copyright and branding info with gradient backgrounds.
 * **Session Wrapper (`Components/SesssionWrapper.js`):** Encapsulates NextAuth's `SessionProvider` to enable application-wide session management.
 
-### 2. High-Converting Landing Page (`app/page.js`)
+### 2. High-Converting Landing Page with Live Statistics (`app/page.js`)
 * **Hero Section:** Features smooth fade-in animations and text highlighting the platform's mission.
 * **Interactive CTAs:** Includes an animated "Start Here" button with slide-in shimmer, scale transitions, and hover-triggered backdrop highlights.
-* **Key Stats Dashboard:** Displays platform impact stats (25K+ Creators Empowered, 1.8M+ Chais Bought, 500K+ Supporters Worldwide, and ₹12Cr+ Earnings Generated) in neatly designed cards with custom emoji badges.
+* **Live Database Stats Dashboard (`app/api/landing-stats/route.js`):** Displays real-time platform impact statistics aggregated dynamically from the MongoDB database, including:
+  * **Creators Empowered:** Total count of active registered creators on the platform.
+  * **Chais Bought:** The count of total successful payments processed.
+  * **Supporters Worldwide:** The count of unique project backers computed using distinct email/name lookups.
+  * **Earnings Generated:** A sum of all successful payment donations, formatted in Indian Rupees (INR).
 
 ### 3. Secure Database & Authentication System
 * **Database Connection (`db/connectDb.js`):** Implemented a global cached MongoDB connection using **Mongoose** to prevent socket connection exhaustion during Next.js hot-reloads in development.
-* **User Schema (`models/user.js`):** Defines user credentials with clean schemas including email normalization (lowercase, trim) and timestamps.
-* **Payment Schema (`models/Payment.js`):** Schema for user support payments, tracking supporting user name, target creator (`to_username`), amount, custom message, and status (`pending`, `success`, `failed`).
+* **User Schema (`models/user.js`):** Defines user credentials with clean schemas including email normalization (lowercase, trim), default goals, categories (`Design`, `Engineering`, `Writing`, `Video`), view counters, and timestamps.
+* **Payment Schema (`models/Payment.js`):** Schema for user support payments, tracking supporting user name, email, target creator (`to_username`), amount, custom message, and status (`pending`, `success`, `failed`).
 * **Withdrawal Schema (`models/Withdrawal.js`):** Schema tracking payout withdrawals for creators, detailing amount, withdrawal method (e.g., Stripe, PayPal), and transfer status.
+* **Post Schema (`models/Post.js`):** Schema tracking update posts published by creators, storing title, content, creator slug, and the minimum cumulative donation required to unlock the post.
 * **Credentials Registration API (`app/api/signup/route.js`):** Secure POST endpoint for registering new users. Includes input validation, email duplicate checks, and password hashing using `bcryptjs`.
 * **NextAuth Config (`app/api/auth/[...nextauth]/route.js`):** Standardized NextAuth setup utilizing **JWT session strategy** with support for three auth providers:
   * **Google OAuth** for fast single-click social sign-on.
   * **GitHub OAuth** for developers and creators.
   * **Credentials Provider** integrated directly with the MongoDB backend to validate hashed passwords.
 
-### 4. Dedicated Sign Up Portal (`app/signup/page.js`)
-* **Interactive Sign Up Form:** Fully styled username, email, password, and confirm password fields.
+### 4. Dedicated Sign Up & Login Portals with Session Redirection
+* **Active Session Guard:** Seamless user experience that automatically redirects authenticated users directly to `/dashboard` if they attempt to access the `/login` or `/signup` portals.
+* **Interactive Sign Up Form (`app/signup/page.js`):** Fully styled username, email, password, and confirm password fields.
 * **Auto-Login on Signup:** Automatically logs the user in immediately after registering a new account, removing unnecessary steps.
 * **Live Password Strength Meter:** Evaluates password input in real-time (from "Very Weak" to "Very Strong") with an animated five-bar indicator showing progress and dynamic color states.
 * **Password Visibility Toggle:** Integrated a stateful show/hide toggle for password entries.
-* **Multi-provider Social Auth:** Custom buttons for single-click Github, Google, and Apple third-party sign-ins.
+* **Multi-provider Social Auth:** Custom buttons for single-click GitHub, Google, and Apple third-party sign-ins.
 
-### 5. Dedicated Login Portal (`app/login/page.js`)
-* **Login Form:** Designed an elegant card-based authentication page centered on a black backdrop and subtle neon purple glows.
-* **Password Visibility Toggle:** Integrated a stateful show/hide toggle for password entries.
-* **Multi-provider Social Auth:** Included styled buttons ready for GitHub, Google, and Apple third-party sign-ins.
-* **Minimalist Sub-layout (`app/login/layout.js`):** Keeps authentication pages clean by bypassing redundant font imports and layout overrides.
-
-### 6. Interactive Role Selection Portal (`app/select-role/page.js`)
+### 5. Interactive Role Selection Portal (`app/select-role/page.js`)
 * **Dynamic Role Chooser:** Allows users to select their profile type as either a **Student** (to learn and support) or a **Creator** (to share work and get funded) using beautifully styled, interactive cards with micro-animations.
 * **Role Database Persistence:** Integrates with the `/api/user/role` backend endpoint to persist the user's selected role directly to their MongoDB user document.
 * **Stateful Flow:** Features client-side persistence (`localStorage`) alongside the database update to manage user redirection flows.
-* **Modern UI & UX:** Displays contextual success/error status messages with transition states and smooth navigation redirects.
 
-### 7. Student Welcome Transition & Layout (`app/student/...`)
+### 6. Student Welcome Transition & Layout (`app/student/...`)
 * **Dedicated Sub-Layout (`app/student/layout.js`):** A custom layout that overrides the global navbar and footer, offering a clean, full-screen interactive space.
 * **Premium Welcome Overlay (`app/student/welcome/page.js`):** Displays a personalized greeting for the logged-in student user, which automatically slides up after a few seconds using custom CSS animations.
 * **Staggered Dashboard Animation (`app/student/welcome/WelcomeTransition.css`):** Features beautifully timed, staggered entrance animations for the dashboard header, summary text, and the primary "Get Started" call-to-action button.
 
-### 8. Multi-Step Creator Onboarding Flow (`app/creator-onboarding/...`)
+### 7. Multi-Step Creator Onboarding Flow (`app/creator-onboarding/...`)
 * **Shared Context State Onboarding Layout (`app/creator-onboarding/layout.js`):** Implements a customized onboarding layout utilizing React Context (`OnboardingContext`) to manage unified form state dynamically across all steps.
-* **Dynamic Step & Progress Indicators:** Automatically tracks pathnames (`/step2`, `/step3`, `/step4`) to calculate progress percentage, rendering stateful step indicators and transitionary header details.
+* **Dynamic Step & Progress Indicators:** Automatically tracks pathnames (`/step1`, `/step2`, `/step3`, `/step4`) to calculate progress percentage, rendering stateful step indicators and transitionary header details.
 * **Step 1 - Identity Details (`app/creator-onboarding/step1/page.js`):** Collects Legal Full Name, Date of Birth, and features a stateful Phone Verification field with a dummy OTP trigger.
 * **Step 2 - Social Proof & ID Verification (`app/creator-onboarding/step2/page.js`):** Enables single-click toggles to mock connecting Twitter/X and GitHub accounts, alongside a drag-and-drop file upload area to upload Passport or Driver's License credentials.
 * **Step 3 - Payout Selection & Terms (`app/creator-onboarding/step3/page.js`):** Configures options for Payout Methods (Stripe, PayPal, USDC Crypto Wallet), stores account details, and handles compliance checks and terms agreements.
 * **Step 4 - Onboarding Success & Compliance Review (`app/creator-onboarding/step4/page.js`):** Serves as the completion confirmation page, letting creators know their application is encrypted and currently undergoing compliance review.
 
-### 9. Unified Creator Dashboard System (`app/dashboard/...`)
+### 8. Unified Creator Dashboard System (`app/dashboard/...`)
 * **Core Dashboard Page (`app/dashboard/page.js`):**
   * Displays metrics cards for **Monthly Revenue**, **Goal Progress**, and **Profile Views** with real-time numeric counting animation (`animateValue`).
   * Features an interactive **Chart.js** line chart displaying actual weekly revenue side-by-side with target revenue and projected future earnings.
@@ -73,11 +72,22 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
   * Displays financial indicators: **Available Balance**, **Pending Clearance**, and **Total Withdrawn**.
   * Contains a **Withdrawal Request Modal** allowing creators to instantly request payouts to their configured methods (Stripe, PayPal, Crypto).
   * Includes transaction logs with search, time frame, and status-based filtering options.
-* **Unified Platform Hub (`app/dashboard/platform/page.js`):**
-  * Acts as a single-page application (SPA) hub coordinating **Search Creators**, **Public Profile**, and **Settings** views.
-  * **Search Creators Component (`Components/Platform/SearchCreators.js`):** Displays real-time database queries of active creators, categorizing by profession (Design, Engineering, Writing, Video) and showing animated shimmer states during fetching.
-  * **Public Profile Component (`Components/Platform/PublicProfile.js`):** Public-facing page rendering creator bio, metrics, social links, custom message boards, and a support section where users can make mock payments (chais support).
-  * **Settings Form Component (`Components/Platform/SettingsForm.js`):** Comprehensive user control center partitioned into General Settings, Public Profile, Payout Methods, and Security configurations.
+
+### 9. Unified Platform Hub & Gated Content (`app/dashboard/platform/page.js`)
+* **Advanced Search Creators (`Components/Platform/SearchCreators.js`):**
+  * Live category filtering ribbon (`All`, `Design`, `Engineering`, `Writing`, `Video`).
+  * Advanced sorting drop-down: Sort by Popularity (Views), Name (A-Z), or Funding Goal.
+  * Dynamically queries the `/api/creators` endpoint with parameters (`q`, `category`, `sortBy`).
+* **Public Profile Page (`Components/Platform/PublicProfile.js`):**
+  * Public-facing page rendering creator bio, metrics, social links, support message board, and support/chai payment section.
+* **Gated Creator Posts System (`app/api/posts/route.js`):**
+  * Allows creators to write and publish updates locked behind a specific cumulative donation amount (minimum threshold).
+  * Evaluates logged-in supporter's cumulative successful support to the creator dynamically.
+  * Shows full post content if unlocked, or displays a lock overlay requesting additional support if cumulative donations are insufficient.
+* **Supporter Message Feed Protection (`app/api/support/route.js`):**
+  * Protects the creator's support message feed.
+  * Full message details are visible to the creator themselves or any supporter who has contributed a lifetime total of at least ₹100.
+  * Other users see obfuscated messages marked with a lock badge (`🔒 Locked. Support this creator to unlock the message feed!`).
 
 ---
 
