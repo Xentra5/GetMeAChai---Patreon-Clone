@@ -13,7 +13,13 @@ import {
   LogOut,
   Compass,
   User,
-  Settings
+  Settings,
+  Building2,
+  Wallet,
+  Coins,
+  Send,
+  CreditCard,
+  Globe
 } from "lucide-react";
 import "../dashboard.css";
 
@@ -26,10 +32,41 @@ export default function Payouts() {
   const [loading, setLoading] = useState(true);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTaxModalOpen, setIsTaxModalOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [withdrawMethod, setWithdrawMethod] = useState("Stripe Bank Transfer (****4821)");
+  const [withdrawMethod, setWithdrawMethod] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [payoutMethods, setPayoutMethods] = useState([]);
+
+  // Helper to format payout methods dynamically
+  const getFormattedMethodName = (method) => {
+    if (method.methodType === "bank") {
+      return `Bank Transfer (${method.details.bankName} - ****${method.details.accountNumber.slice(-4)})`;
+    }
+    if (method.methodType === "upi") {
+      return `UPI (${method.details.upiId})`;
+    }
+    if (method.methodType === "paypal") {
+      return `PayPal (${method.details.email})`;
+    }
+    if (method.methodType === "stripe") {
+      return `Stripe (${method.details.accountId})`;
+    }
+    if (method.methodType === "wise") {
+      return `Wise (${method.details.email || method.details.memberId})`;
+    }
+    if (method.methodType === "payoneer") {
+      return `Payoneer (${method.details.email || method.details.payeeId})`;
+    }
+    if (method.methodType === "wire") {
+      return `Wire Transfer (${method.details.bankName} - ****${method.details.iban.slice(-4)})`;
+    }
+    if (method.methodType === "crypto") {
+      return `Crypto (${method.details.walletAddress.slice(0, 6)}...${method.details.walletAddress.slice(-4)})`;
+    }
+    return method.methodType;
+  };
 
   // Filter states
   const [statusFilter, setStatusFilter] = useState("All Statuses");
@@ -64,9 +101,61 @@ export default function Payouts() {
     }
   };
 
+  const fetchPayoutMethods = async () => {
+    try {
+      const response = await fetch("/api/dashboard/payouts/methods");
+      if (response.ok) {
+        const resData = await response.json();
+        setPayoutMethods(resData.methods || []);
+        const defaultMethod = resData.methods?.find((m) => m.isDefault);
+        if (defaultMethod) {
+          setWithdrawMethod(getFormattedMethodName(defaultMethod));
+        } else if (resData.methods?.length > 0) {
+          setWithdrawMethod(getFormattedMethodName(resData.methods[0]));
+        } else {
+          setWithdrawMethod("");
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching payout methods:", error);
+    }
+  };
+
+  const handleMakeDefault = async (id) => {
+    try {
+      const response = await fetch(`/api/dashboard/payouts/methods/${id}`, {
+        method: "PATCH",
+      });
+      if (response.ok) {
+        await fetchPayoutMethods();
+      } else {
+        alert("Failed to set default method.");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteMethod = async (id) => {
+    if (!confirm("Are you sure you want to delete this payout method?")) return;
+    try {
+      const response = await fetch(`/api/dashboard/payouts/methods/${id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        await fetchPayoutMethods();
+      } else {
+        alert("Failed to delete payout method.");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     if (status !== "authenticated") return;
     fetchPayouts();
+    fetchPayoutMethods();
   }, [status]);
 
   // Helper for number animation
@@ -111,6 +200,10 @@ export default function Payouts() {
     }
     if (amount > data.availableBalance) {
       alert("Insufficient funds. You cannot withdraw more than your available balance.");
+      return;
+    }
+    if (!withdrawMethod) {
+      alert("Please select or connect a payout method first.");
       return;
     }
 
@@ -320,9 +413,12 @@ export default function Payouts() {
               <div className="card-value">₹{Math.floor(totalWithdrawn).toLocaleString("en-IN")}</div>
               <div className="card-desc">Lifetime earnings transferred to your accounts.</div>
               <div className="card-desc" style={{ marginTop: "auto", paddingTop: "1rem", borderTop: "1px solid var(--border-faint)", fontSize: "0.8rem" }}>
-                <a href="#" style={{ color: "var(--text-main)", textDecoration: "none" }}>
+                <button
+                  onClick={() => setIsTaxModalOpen(true)}
+                  style={{ color: "var(--text-main)", textDecoration: "none", background: "none", border: "none", padding: 0, font: "inherit", cursor: "pointer", display: "inline-flex", alignItems: "center" }}
+                >
                   View tax documents →
-                </a>
+                </button>
               </div>
             </div>
           </div>
@@ -333,61 +429,118 @@ export default function Payouts() {
             <div className="card" style={{ padding: "1.5rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <h2 style={{ fontSize: "1.1rem", fontWeight: "600" }}>Connected Methods</h2>
-                <button className="btn-outline">+ Add Method</button>
+                <Link href="/dashboard/payouts/add" className="btn-outline" style={{ textDecoration: "none" }}>
+                  + Add Method
+                </Link>
               </div>
 
-              <div className="methods-list">
-                {/* Stripe */}
-                <div className="method-item">
-                  <div className="method-left">
-                    <div className="method-icon" style={{ color: "#6366f1" }}>
-                      S
-                    </div>
-                    <div className="method-info">
-                      <h4 style={{ fontSize: "0.95rem", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
-                        Stripe Bank Transfer <span className="badge badge-default">Default</span>
-                      </h4>
-                      <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "2px" }}>
-                        HDFC Bank ending in ****4821
-                      </p>
-                    </div>
-                  </div>
-                  <button className="btn-outline">Manage</button>
-                </div>
+              <div className="methods-list" style={{ marginTop: "1rem" }}>
+                {payoutMethods.length > 0 ? (
+                  payoutMethods.map((method) => {
+                    let iconElement = null;
+                    let iconColor = "#8b5cf6";
+                    let title = method.methodType.toUpperCase();
+                    let desc = "";
 
-                {/* PayPal */}
-                <div className="method-item">
-                  <div className="method-left">
-                    <div className="method-icon" style={{ color: "#3b82f6" }}>
-                      P
-                    </div>
-                    <div className="method-info">
-                      <h4 style={{ fontSize: "0.95rem", fontWeight: "600" }}>PayPal Account</h4>
-                      <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "2px" }}>
-                        {data.email}
-                      </p>
-                    </div>
-                  </div>
-                  <button className="btn-outline">Manage</button>
-                </div>
+                    if (method.methodType === "bank") {
+                      iconElement = <Building2 className="w-5 h-5" />;
+                      iconColor = "#10b981";
+                      title = "Bank Account";
+                      desc = `${method.details.bankName} (****${method.details.accountNumber.slice(-4)})`;
+                    } else if (method.methodType === "upi") {
+                      iconElement = <Send className="w-5 h-5" />;
+                      iconColor = "#f59e0b";
+                      title = "UPI";
+                      desc = method.details.upiId;
+                    } else if (method.methodType === "paypal") {
+                      iconElement = <Wallet className="w-5 h-5" />;
+                      iconColor = "#00b9ff";
+                      title = "PayPal";
+                      desc = method.details.email;
+                    } else if (method.methodType === "stripe") {
+                      iconElement = <CreditCard className="w-5 h-5" />;
+                      iconColor = "#635bff";
+                      title = "Stripe Connect";
+                      desc = method.details.accountId;
+                    } else if (method.methodType === "wise") {
+                      iconElement = <Globe className="w-5 h-5" />;
+                      iconColor = "#00b9ff";
+                      title = "Wise";
+                      desc = method.details.email || method.details.memberId;
+                    } else if (method.methodType === "payoneer") {
+                      iconElement = <CreditCard className="w-5 h-5" />;
+                      iconColor = "#ff4f00";
+                      title = "Payoneer";
+                      desc = method.details.email || method.details.payeeId;
+                    } else if (method.methodType === "wire") {
+                      iconElement = <Building2 className="w-5 h-5" />;
+                      iconColor = "#a1a1aa";
+                      title = "International Wire";
+                      desc = `${method.details.bankName} (****${method.details.iban.slice(-4)})`;
+                    } else if (method.methodType === "crypto") {
+                      iconElement = <Coins className="w-5 h-5" />;
+                      iconColor = "#ec4899";
+                      title = "Crypto Wallet (USDC)";
+                      desc = `Polygon (${method.details.walletAddress.slice(0, 6)}...${method.details.walletAddress.slice(-4)})`;
+                    }
 
-                {/* Crypto */}
-                <div className="method-item" style={{ borderStyle: "dashed", opacity: 0.7 }}>
-                  <div className="method-left">
-                    <div className="method-icon" style={{ color: "var(--text-faint)" }}>
-                      C
-                    </div>
-                    <div className="method-info">
-                      <h4 style={{ fontSize: "0.95rem", fontWeight: "600" }}>Crypto Wallet</h4>
-                      <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "2px" }}>
-                        Receive USDC via Polygon network
-                      </p>
-                    </div>
+                    return (
+                      <div className="method-item" key={method._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", borderBottom: "1px solid var(--border-faint)" }}>
+                        <div className="method-left" style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                          <div
+                            className="method-icon"
+                            style={{
+                              backgroundColor: "rgba(255, 255, 255, 0.03)",
+                              border: "1px solid var(--border-subtle)",
+                              color: iconColor,
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "10px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {iconElement}
+                          </div>
+                          <div className="method-info">
+                            <h4 style={{ fontSize: "0.95rem", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
+                              {title} {method.isDefault && <span className="badge badge-default" style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10b981", fontSize: "0.7rem", padding: "2px 6px", borderRadius: "4px" }}>Default</span>}
+                            </h4>
+                            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "2px", margin: 0 }}>
+                              {desc}
+                            </p>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          {!method.isDefault && (
+                            <button
+                              onClick={() => handleMakeDefault(method._id)}
+                              className="btn-outline"
+                              style={{ fontSize: "0.8rem", padding: "4px 8px" }}
+                            >
+                              Make Default
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteMethod(method._id)}
+                            className="btn-outline"
+                            style={{ fontSize: "0.8rem", padding: "4px 8px", borderColor: "rgba(239, 68, 68, 0.4)", color: "#f87171" }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div style={{ textAlign: "center", padding: "2rem 0", color: "var(--text-muted)" }}>
+                    <p style={{ margin: "0 0 1rem 0", fontSize: "0.9rem" }}>No payout methods connected yet.</p>
+                    <Link href="/dashboard/payouts/add" className="btn-brand" style={{ textDecoration: "none", fontSize: "0.85rem", padding: "6px 12px" }}>
+                      Connect Method
+                    </Link>
                   </div>
-                  <button className="btn-outline" style={{ borderColor: "var(--brand)", color: "var(--brand)" }}>
-                    Connect
-                  </button>
-                </div>
+                )}
               </div>
             </div>
 
@@ -552,15 +705,28 @@ export default function Payouts() {
 
               <div className="form-group">
                 <label>Transfer to</label>
-                <select
-                  className="text-input"
-                  style={{ paddingLeft: "16px", appearance: "none" }}
-                  value={withdrawMethod}
-                  onChange={(e) => setWithdrawMethod(e.target.value)}
-                >
-                  <option>Stripe Bank Transfer (****4821)</option>
-                  <option>PayPal ({data.email})</option>
-                </select>
+                {payoutMethods.length > 0 ? (
+                  <select
+                    className="text-input"
+                    style={{ paddingLeft: "16px", appearance: "none" }}
+                    value={withdrawMethod}
+                    onChange={(e) => setWithdrawMethod(e.target.value)}
+                  >
+                    {payoutMethods.map((method) => (
+                      <option key={method._id} value={getFormattedMethodName(method)}>
+                        {getFormattedMethodName(method)}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div style={{ padding: "10px", fontSize: "0.85rem", color: "#f87171", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "var(--radius-sm)" }}>
+                    No payment methods connected. Please{" "}
+                    <Link href="/dashboard/payouts/add" style={{ color: "var(--brand)", textDecoration: "underline" }}>
+                      add a method
+                    </Link>{" "}
+                    first.
+                  </div>
+                )}
               </div>
             </div>
 
@@ -574,6 +740,117 @@ export default function Payouts() {
                 ) : (
                   <span>Confirm Withdrawal</span>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MOCK TAX DOCUMENT MODAL */}
+      {isTaxModalOpen && (
+        <div className="modal-overlay active" onClick={() => setIsTaxModalOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "700px", width: "90%" }}>
+            <div className="modal-header" style={{ borderBottom: "1px solid var(--border-subtle)", paddingBottom: "1rem" }}>
+              <h3 className="modal-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span>📄</span> Mock Tax Statement (FY 2025-26)
+              </h3>
+              <button className="close-btn" onClick={() => setIsTaxModalOpen(false)}>
+                ✕
+              </button>
+            </div>
+            <div className="modal-body" id="tax-document-print" style={{ color: "#000", background: "#fff", padding: "2rem", borderRadius: "8px", fontFamily: "Courier New, monospace", marginTop: "1rem" }}>
+              <div style={{ textAlign: "center", marginBottom: "1.5rem", borderBottom: "2px double #000", paddingBottom: "1rem" }}>
+                <h2 style={{ fontSize: "1.4rem", fontWeight: "bold", margin: 0, letterSpacing: "1px" }}>FORM 16A (SIMULATED)</h2>
+                <p style={{ fontSize: "0.8rem", margin: "4px 0" }}>Certificate of Tax Deducted at Source (TDS) under Section 203</p>
+                <p style={{ fontSize: "0.85rem", fontWeight: "bold", margin: 0 }}>GetMeAChai India Private Limited</p>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", fontSize: "0.8rem", marginBottom: "1.5rem", borderBottom: "1px solid #ccc", paddingBottom: "1rem" }}>
+                <div>
+                  <strong>Deductor Info:</strong><br />
+                  GetMeAChai India Pvt. Ltd.<br />
+                  TAN: BLRG09823C<br />
+                  PAN: AABCG9982M
+                </div>
+                <div>
+                  <strong>Deductee Info (Creator):</strong><br />
+                  Name: {data.username}<br />
+                  Email: {data.email}<br />
+                  PAN: XXXX9988X (Mocked)
+                </div>
+              </div>
+
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.8rem", marginBottom: "1.5rem" }}>
+                <thead>
+                  <tr style={{ borderBottom: "2px solid #000" }}>
+                    <th style={{ textAlign: "left", padding: "6px" }}>Period</th>
+                    <th style={{ textAlign: "left", padding: "6px" }}>Section</th>
+                    <th style={{ textAlign: "right", padding: "6px" }}>Gross Earnings</th>
+                    <th style={{ textAlign: "right", padding: "6px" }}>TDS Withheld (1%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: "1px solid #eee" }}>
+                    <td style={{ padding: "8px 6px" }}>Q1 (Apr-Jun)</td>
+                    <td style={{ padding: "8px 6px" }}>194-S</td>
+                    <td style={{ textAlign: "right", padding: "8px 6px" }}>₹{Math.floor(totalWithdrawn * 0.25).toLocaleString("en-IN")}</td>
+                    <td style={{ textAlign: "right", padding: "8px 6px" }}>₹{Math.floor(totalWithdrawn * 0.25 * 0.01).toLocaleString("en-IN")}</td>
+                  </tr>
+                  <tr style={{ borderBottom: "1px solid #eee" }}>
+                    <td style={{ padding: "8px 6px" }}>Q2 (Jul-Sep)</td>
+                    <td style={{ padding: "8px 6px" }}>194-S</td>
+                    <td style={{ textAlign: "right", padding: "8px 6px" }}>₹{Math.floor(totalWithdrawn * 0.25).toLocaleString("en-IN")}</td>
+                    <td style={{ textAlign: "right", padding: "8px 6px" }}>₹{Math.floor(totalWithdrawn * 0.25 * 0.01).toLocaleString("en-IN")}</td>
+                  </tr>
+                  <tr style={{ borderBottom: "1px solid #eee" }}>
+                    <td style={{ padding: "8px 6px" }}>Q3 (Oct-Dec)</td>
+                    <td style={{ padding: "8px 6px" }}>194-S</td>
+                    <td style={{ textAlign: "right", padding: "8px 6px" }}>₹{Math.floor(totalWithdrawn * 0.25).toLocaleString("en-IN")}</td>
+                    <td style={{ textAlign: "right", padding: "8px 6px" }}>₹{Math.floor(totalWithdrawn * 0.25 * 0.01).toLocaleString("en-IN")}</td>
+                  </tr>
+                  <tr style={{ borderBottom: "2px solid #000" }}>
+                    <td style={{ padding: "8px 6px" }}>Q4 (Jan-Mar)</td>
+                    <td style={{ padding: "8px 6px" }}>194-S</td>
+                    <td style={{ textAlign: "right", padding: "8px 6px" }}>₹{Math.floor(totalWithdrawn * 0.25).toLocaleString("en-IN")}</td>
+                    <td style={{ textAlign: "right", padding: "8px 6px" }}>₹{Math.floor(totalWithdrawn * 0.25 * 0.01).toLocaleString("en-IN")}</td>
+                  </tr>
+                  <tr style={{ fontWeight: "bold" }}>
+                    <td colSpan="2" style={{ padding: "8px 6px" }}>TOTAL</td>
+                    <td style={{ textAlign: "right", padding: "8px 6px" }}>₹{Math.floor(totalWithdrawn).toLocaleString("en-IN")}</td>
+                    <td style={{ textAlign: "right", padding: "8px 6px" }}>₹{Math.floor(totalWithdrawn * 0.01).toLocaleString("en-IN")}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", fontSize: "0.75rem", marginTop: "2rem" }}>
+                <div>
+                  Date Generated: {new Date().toLocaleDateString("en-IN")}<br />
+                  Place: Bengaluru, India
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "sans-serif", fontSize: "0.85rem", fontStyle: "italic", borderBottom: "1px solid #000", width: "120px", margin: "0 auto 4px" }}>
+                    GetMeAChai Tax Dept
+                  </div>
+                  Authorized Signatory
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer" style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: "1rem", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button className="btn-outline" onClick={() => setIsTaxModalOpen(false)}>
+                Close
+              </button>
+              <button 
+                className="btn-brand" 
+                onClick={() => {
+                  const printContents = document.getElementById("tax-document-print").innerHTML;
+                  const originalContents = document.body.innerHTML;
+                  document.body.innerHTML = printContents;
+                  window.print();
+                  document.body.innerHTML = originalContents;
+                  window.location.reload();
+                }}
+              >
+                🖨️ Print Statement
               </button>
             </div>
           </div>
