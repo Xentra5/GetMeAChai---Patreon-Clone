@@ -11,7 +11,9 @@ import {
   LogOut,
   User,
   Settings as SettingsIcon,
-  Compass
+  Compass,
+  Wallet,
+  MapPin
 } from "lucide-react";
 import SearchCreators from "../../../Components/Platform/SearchCreators";
 import PublicProfile from "../../../Components/Platform/PublicProfile";
@@ -23,6 +25,19 @@ function PlatformUnifiedPageInner() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Region & Localisation State: "USA" (USD) or "IND" (INR)
+  const [userRegion, setUserRegion] = useState("USA");
+
+  // Load region from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("userRegion");
+      if (saved) {
+        setUserRegion(saved);
+      }
+    }
+  }, []);
 
   // SPA View Switcher
   const [activeView, setActiveView] = useState("search"); // 'search' | 'profile' | 'settings'
@@ -89,6 +104,12 @@ function PlatformUnifiedPageInner() {
               Revenue & Payouts
             </span>
           </button>
+          <button onClick={() => router.push("/dashboard/wallet")} className="nav-item w-full text-left bg-transparent border-none cursor-pointer">
+            <span className="flex items-center gap-2">
+              <Wallet className="w-4 h-4" />
+              My Wallet
+            </span>
+          </button>
           <button onClick={() => router.push("/dashboard/audience-insights")} className="nav-item w-full text-left bg-transparent border-none cursor-pointer">
             <span className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -142,6 +163,35 @@ function PlatformUnifiedPageInner() {
           </button>
           
           <div className="header-actions">
+            {/* Header Region Selector */}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(255, 255, 255, 0.03)", border: "1px solid var(--border-subtle)", padding: "4px 10px", borderRadius: "8px" }}>
+              <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+              <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Region:</span>
+              <select
+                value={userRegion}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setUserRegion(val);
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem("userRegion", val);
+                  }
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-main)",
+                  fontSize: "0.8rem",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  outline: "none",
+                  paddingRight: "4px"
+                }}
+              >
+                <option value="USA" style={{ background: "#0a0a0a" }}>🇺🇸 United States (USD)</option>
+                <option value="IND" style={{ background: "#0a0a0a" }}>🇮🇳 India (INR)</option>
+              </select>
+            </div>
+
             <button className="btn-export" onClick={() => router.push("/dashboard")}>
               ↗ Go to Dashboard
             </button>

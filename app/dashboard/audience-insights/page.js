@@ -16,7 +16,9 @@ import {
   LogOut,
   Compass,
   User,
-  Settings
+  Settings,
+  Wallet,
+  MapPin
 } from "lucide-react";
 import "../dashboard.css";
 
@@ -26,6 +28,19 @@ Chart.register(...registerables);
 export default function AudienceInsights() {
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  // Region & Localisation State: "USA" (USD) or "IND" (INR)
+  const [userRegion, setUserRegion] = useState("USA");
+
+  // Load region from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("userRegion");
+      if (saved) {
+        setUserRegion(saved);
+      }
+    }
+  }, []);
 
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
@@ -209,6 +224,12 @@ export default function AudienceInsights() {
               Revenue & Payouts
             </span>
           </Link>
+          <Link href="/dashboard/wallet" className="nav-item">
+            <span className="flex items-center gap-2">
+              <Wallet className="w-4 h-4" />
+              My Wallet
+            </span>
+          </Link>
           <Link href="/dashboard/audience-insights" className="nav-item active">
             <span className="flex items-center gap-2">
               <Users className="w-4 h-4 text-purple-400" />
@@ -250,6 +271,35 @@ export default function AudienceInsights() {
             <span className="kbd">⌘K</span>
           </button>
           <div className="header-actions">
+            {/* Header Region Selector */}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(255, 255, 255, 0.03)", border: "1px solid var(--border-subtle)", padding: "4px 10px", borderRadius: "8px" }}>
+              <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+              <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Region:</span>
+              <select
+                value={userRegion}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setUserRegion(val);
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem("userRegion", val);
+                  }
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-main)",
+                  fontSize: "0.8rem",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  outline: "none",
+                  paddingRight: "4px"
+                }}
+              >
+                <option value="USA" style={{ background: "#0a0a0a" }}>🇺🇸 United States (USD)</option>
+                <option value="IND" style={{ background: "#0a0a0a" }}>🇮🇳 India (INR)</option>
+              </select>
+            </div>
+
             <button className="btn-export">
               <Download className="w-4 h-4" /> Export Data
             </button>

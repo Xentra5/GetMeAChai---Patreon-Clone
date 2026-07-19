@@ -26,6 +26,10 @@ const UserSchema = new mongoose.Schema(
             type: Number,
             default: 50000,
         },
+        walletBalance: {
+            type: Number,
+            default: 0,
+        },
         category: {
             type: String,
             default: "Engineering",

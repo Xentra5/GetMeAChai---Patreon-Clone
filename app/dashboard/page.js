@@ -17,7 +17,9 @@ import {
   LogOut,
   Compass,
   User,
-  Settings
+  Settings,
+  Wallet,
+  MapPin
 } from "lucide-react";
 import "./dashboard.css";
 
@@ -34,6 +36,20 @@ export default function Dashboard() {
   // API stats data state
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Region & Localisation State: "USA" (USD) or "IND" (INR)
+  const [userRegion, setUserRegion] = useState("USA");
+  const usdToInrRate = 83.5;
+
+  // Load region from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("userRegion");
+      if (saved) {
+        setUserRegion(saved);
+      }
+    }
+  }, []);
 
   // States for animated counters
   const [revenue, setRevenue] = useState(0);
@@ -141,8 +157,11 @@ export default function Dashboard() {
     setGoalPerc(0);
     setViews(0);
 
+    const isUSD = userRegion === "USA";
+    const targetRevenue = isUSD ? Math.floor(stats.revenue / usdToInrRate) : stats.revenue;
+
     // Animate stats numbers
-    animateValue(setRevenue, 0, stats.revenue, 1500);
+    animateValue(setRevenue, 0, targetRevenue, 1500);
     animateValue(setGoalPerc, 0, stats.goalPercentage, 1500);
     animateValue(setViews, 0, stats.profileViews, 1500);
 
@@ -152,7 +171,7 @@ export default function Dashboard() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [stats]);
+  }, [stats, userRegion]);
 
   // Chart initialization
   useEffect(() => {
@@ -168,13 +187,24 @@ export default function Dashboard() {
       chartInstance.current.destroy();
     }
 
+    const isUSD = userRegion === "USA";
+    const convertedActualWeeks = isUSD
+      ? stats.actualRevenueWeeks.map((v) => (v !== null ? Math.round(v / usdToInrRate) : null))
+      : stats.actualRevenueWeeks;
+    const convertedTargetWeeks = isUSD
+      ? stats.goalTargetWeeks.map((v) => (v !== null ? Math.round(v / usdToInrRate) : null))
+      : stats.goalTargetWeeks;
+    const convertedProjectionWeek = isUSD
+      ? Math.round(stats.projectionWeek / usdToInrRate)
+      : stats.projectionWeek;
+
     // Connect weeks projection from last actual point
     const projectionData = [
       null,
       null,
       null,
-      stats.actualRevenueWeeks[3],
-      stats.projectionWeek
+      convertedActualWeeks[3],
+      convertedProjectionWeek
     ];
 
     chartInstance.current = new Chart(ctx, {
@@ -184,7 +214,7 @@ export default function Dashboard() {
         datasets: [
           {
             label: "Actual Revenue",
-            data: stats.actualRevenueWeeks,
+            data: convertedActualWeeks,
             borderColor: "#10b981",
             backgroundColor: gradient,
             borderWidth: 2,
@@ -195,7 +225,7 @@ export default function Dashboard() {
           },
           {
             label: "Goal Target",
-            data: stats.goalTargetWeeks,
+            data: convertedTargetWeeks,
             borderColor: "#71717a",
             borderWidth: 2,
             borderDash: [5, 5],
@@ -232,7 +262,7 @@ export default function Dashboard() {
             padding: 12,
             callbacks: {
               label: function (context) {
-                let val = "₹" + context.parsed.y.toLocaleString("en-IN");
+                let val = (isUSD ? "$" : "₹") + context.parsed.y.toLocaleString(isUSD ? "en-US" : "en-IN");
                 return context.dataset.label + ": " + val;
               },
               afterBody: function (context) {
@@ -244,8 +274,8 @@ export default function Dashboard() {
                   return (
                     "\nDifference: " +
                     prefix +
-                    "₹" +
-                    diff.toLocaleString("en-IN")
+                    (isUSD ? "$" : "₹") +
+                    diff.toLocaleString(isUSD ? "en-US" : "en-IN")
                   );
                 }
               },
@@ -262,7 +292,7 @@ export default function Dashboard() {
             ticks: {
               color: "#71717a",
               font: { family: "Inter" },
-              callback: (val) => "₹" + val / 1000 + "k",
+              callback: (val) => (isUSD ? "$" : "₹") + (isUSD ? val : val / 1000 + "k"),
             },
           },
         },
@@ -275,7 +305,7 @@ export default function Dashboard() {
         chartInstance.current.destroy();
       }
     };
-  }, [stats]);
+  }, [stats, userRegion]);
 
   // Loading indicator for session validation
   if (status === "loading" || (status === "authenticated" && loading)) {
@@ -293,9 +323,10 @@ export default function Dashboard() {
   if (!stats) return null;
 
   // Extract stats values with safe default fallbacks
-  const goalProgressVal = stats?.goalProgress ?? 0;
-  const monthlyGoalVal = stats?.monthlyGoal ?? 0;
-  const projectedOverageVal = stats?.projectedOverage ?? 0;
+  const isUSD = userRegion === "USA";
+  const goalProgressVal = isUSD ? Math.floor((stats?.goalProgress ?? 0) / usdToInrRate) : (stats?.goalProgress ?? 0);
+  const monthlyGoalVal = isUSD ? Math.floor((stats?.monthlyGoal ?? 0) / usdToInrRate) : (stats?.monthlyGoal ?? 0);
+  const projectedOverageVal = isUSD ? Math.floor((stats?.projectedOverage ?? 0) / usdToInrRate) : (stats?.projectedOverage ?? 0);
   const goalRemaining = monthlyGoalVal - goalProgressVal;
 
   return (
@@ -317,6 +348,12 @@ export default function Dashboard() {
             <span className="flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
               Revenue & Payouts
+            </span>
+          </Link>
+          <Link href="/dashboard/wallet" className="nav-item">
+            <span className="flex items-center gap-2">
+              <Wallet className="w-4 h-4" />
+              My Wallet
             </span>
           </Link>
           <Link href="/dashboard/audience-insights" className="nav-item">
@@ -360,6 +397,35 @@ export default function Dashboard() {
             <span className="kbd">⌘K</span>
           </button>
           <div className="header-actions">
+            {/* Header Region Selector */}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(255, 255, 255, 0.03)", border: "1px solid var(--border-subtle)", padding: "4px 10px", borderRadius: "8px" }}>
+              <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+              <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Region:</span>
+              <select
+                value={userRegion}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setUserRegion(val);
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem("userRegion", val);
+                  }
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-main)",
+                  fontSize: "0.8rem",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  outline: "none",
+                  paddingRight: "4px"
+                }}
+              >
+                <option value="USA" style={{ background: "#0a0a0a" }}>🇺🇸 United States (USD)</option>
+                <option value="IND" style={{ background: "#0a0a0a" }}>🇮🇳 India (INR)</option>
+              </select>
+            </div>
+
             <button className="btn-export">
               <Download className="w-4 h-4" /> Export CSV
             </button>
@@ -417,7 +483,9 @@ export default function Dashboard() {
               {projectedOverageVal > 0 ? (
                 <>
                   You're projected to exceed your monthly goal by{" "}
-                  <span className="txt-success fw-600">₹{projectedOverageVal.toLocaleString("en-IN")}</span>.
+                  <span className="txt-success fw-600">
+                    {isUSD ? "$" : "₹"}{projectedOverageVal.toLocaleString(isUSD ? "en-US" : "en-IN")}
+                  </span>.
                 </>
               ) : (
                 "You are on track to hit your targets this month."
@@ -440,7 +508,7 @@ export default function Dashboard() {
               </div>
               <div className="context-row">
                 <div className="card-value">
-                  ₹{revenue.toLocaleString("en-IN")}
+                  {isUSD ? "$" : "₹"}{revenue.toLocaleString(isUSD ? "en-US" : "en-IN")}
                 </div>
               </div>
               <div className="insight-text">
@@ -474,12 +542,14 @@ export default function Dashboard() {
               <div className="card-value">{goalPerc}%</div>
 
               <div className="insight-text" style={{ marginTop: "4px" }}>
-                <span className="fw-600 text-main">₹{goalProgressVal.toLocaleString("en-IN")}</span> of ₹{monthlyGoalVal.toLocaleString("en-IN")}
+                <span className="fw-600 text-main">
+                  {isUSD ? "$" : "₹"}{goalProgressVal.toLocaleString(isUSD ? "en-US" : "en-IN")}
+                </span> of {isUSD ? "$" : "₹"}{monthlyGoalVal.toLocaleString(isUSD ? "en-US" : "en-IN")}
                 <br />
                 {monthlyGoalVal === 0
                   ? "Set a goal to track progress"
                   : goalRemaining > 0
-                    ? `₹${goalRemaining.toLocaleString("en-IN")} remaining`
+                    ? `${isUSD ? "$" : "₹"}${goalRemaining.toLocaleString(isUSD ? "en-US" : "en-IN")} remaining`
                     : "Goal achieved! 🏆"}
               </div>
 

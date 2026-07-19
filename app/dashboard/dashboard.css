@@ -289,11 +289,54 @@
 
 @media (max-width: 1024px) {
     .dashboard-body .sidebar {
-        display: none;
+        width: 70px !important;
+        display: flex !important;
+    }
+    .dashboard-body .brand {
+        justify-content: center;
+        padding: 0 !important;
+        font-size: 0 !important;
+    }
+    .dashboard-body .brand span {
+        font-size: 1.4rem !important;
+    }
+    .dashboard-body .nav-label {
+        display: none !important;
+    }
+    .dashboard-body .nav-item {
+        padding: 12px 0 !important;
+        justify-content: center !important;
+    }
+    .dashboard-body .nav-item span {
+        font-size: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+    .dashboard-body .nav-item span svg {
+        width: 20px !important;
+        height: 20px !important;
+        margin: 0 !important;
     }
     .dashboard-body .main-wrapper {
-        margin-left: 0;
-        width: 100%;
+        margin-left: 70px !important;
+        width: calc(100% - 70px) !important;
+    }
+    .dashboard-body .header {
+        padding: 0 1.25rem !important;
+    }
+    .dashboard-body .content {
+        padding: 1.5rem !important;
+    }
+    .dashboard-body .search-trigger {
+        width: 180px !important;
+    }
+    .dashboard-body .search-trigger span {
+        font-size: 0.75rem !important;
+    }
+    .dashboard-body .kbd {
+        display: none !important;
     }
     .dashboard-body .bento-grid {
         grid-template-columns: 1fr;
@@ -436,5 +479,7 @@
 
 .dashboard-body .toast { position: fixed; bottom: 24px; right: 24px; background: var(--success-bg); border: 1px solid var(--success); color: var(--success); padding: 12px 24px; border-radius: 8px; font-weight: 500; transform: translateY(100px); opacity: 0; transition: var(--transition); z-index: 10000; display: flex; align-items: center; gap: 8px; pointer-events: none; }
 .dashboard-body .toast.show { transform: translateY(0); opacity: 1; }
+
+
 
 

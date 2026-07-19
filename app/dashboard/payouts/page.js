@@ -19,7 +19,8 @@ import {
   Coins,
   Send,
   CreditCard,
-  Globe
+  Globe,
+  MapPin
 } from "lucide-react";
 import "../dashboard.css";
 
@@ -30,6 +31,21 @@ export default function Payouts() {
   // States
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Region & Localisation State: "USA" (USD) or "IND" (INR)
+  const [userRegion, setUserRegion] = useState("USA");
+  const usdToInrRate = 83.5;
+  const isUSD = userRegion === "USA";
+
+  // Load region from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("userRegion");
+      if (saved) {
+        setUserRegion(saved);
+      }
+    }
+  }, []);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTaxModalOpen, setIsTaxModalOpen] = useState(false);
@@ -186,19 +202,28 @@ export default function Payouts() {
     setPendingClearance(0);
     setTotalWithdrawn(0);
 
-    animateValue(setAvailableBalance, 0, data.availableBalance, 1200);
-    animateValue(setPendingClearance, 0, data.pendingClearance, 1200);
-    animateValue(setTotalWithdrawn, 0, data.totalWithdrawn, 1200);
-  }, [data]);
+    const isUSD = userRegion === "USA";
+    const avBal = isUSD ? data.availableBalance / usdToInrRate : data.availableBalance;
+    const pendClr = isUSD ? data.pendingClearance / usdToInrRate : data.pendingClearance;
+    const totWd = isUSD ? data.totalWithdrawn / usdToInrRate : data.totalWithdrawn;
+
+    animateValue(setAvailableBalance, 0, avBal, 1200);
+    animateValue(setPendingClearance, 0, pendClr, 1200);
+    animateValue(setTotalWithdrawn, 0, totWd, 1200);
+  }, [data, userRegion]);
 
   // Handle Withdraw submission
   const handleWithdrawSubmit = async () => {
+    const isUSD = userRegion === "USA";
     const amount = Number(withdrawAmount);
-    if (!amount || amount < 1000) {
-      alert("Minimum withdrawal amount is ₹1,000.");
+    const minAmount = isUSD ? 12 : 1000;
+    
+    if (!amount || amount < minAmount) {
+      alert(`Minimum withdrawal amount is ${isUSD ? "$12.00" : "₹1,000"}.`);
       return;
     }
-    if (amount > data.availableBalance) {
+    const maxBalance = isUSD ? data.availableBalance / usdToInrRate : data.availableBalance;
+    if (amount > maxBalance) {
       alert("Insufficient funds. You cannot withdraw more than your available balance.");
       return;
     }
@@ -213,7 +238,7 @@ export default function Payouts() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount,
+          amount: isUSD ? amount * usdToInrRate : amount,
           method: withdrawMethod.replace(/\s*\(.*\)/g, ""), // clean label
         }),
       });
@@ -291,6 +316,12 @@ export default function Payouts() {
               Revenue & Payouts
             </span>
           </Link>
+          <Link href="/dashboard/wallet" className="nav-item">
+            <span className="flex items-center gap-2">
+              <Wallet className="w-4 h-4" />
+              My Wallet
+            </span>
+          </Link>
           <Link href="/dashboard/audience-insights" className="nav-item">
             <span className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -332,6 +363,35 @@ export default function Payouts() {
             <span className="kbd">⌘K</span>
           </button>
           <div className="header-actions">
+            {/* Header Region Selector */}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(255, 255, 255, 0.03)", border: "1px solid var(--border-subtle)", padding: "4px 10px", borderRadius: "8px" }}>
+              <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+              <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Region:</span>
+              <select
+                value={userRegion}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setUserRegion(val);
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem("userRegion", val);
+                  }
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-main)",
+                  fontSize: "0.8rem",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  outline: "none",
+                  paddingRight: "4px"
+                }}
+              >
+                <option value="USA" style={{ background: "#0a0a0a" }}>🇺🇸 United States (USD)</option>
+                <option value="IND" style={{ background: "#0a0a0a" }}>🇮🇳 India (INR)</option>
+              </select>
+            </div>
+
             <button className="btn-export">Documentation</button>
             <div className="profile-container" style={{ position: "relative" }}>
               <button
@@ -393,8 +453,10 @@ export default function Payouts() {
           {/* BALANCE SUMMARY */}
           <div className="balance-grid">
             <div className="card c-primary">
-              <div className="card-title">Available Balance</div>
-              <div className="card-value txt-success">₹{Math.floor(availableBalance).toLocaleString("en-IN")}</div>
+              <div className="card-title">Available Balance ({isUSD ? "USD" : "INR"})</div>
+              <div className="card-value txt-success">
+                {isUSD ? "$" : "₹"}{availableBalance.toLocaleString(isUSD ? "en-US" : "en-IN", { minimumFractionDigits: isUSD ? 2 : 0, maximumFractionDigits: isUSD ? 2 : 0 })}
+              </div>
               <div className="card-desc">Funds ready to be withdrawn to your bank.</div>
               <button className="btn-brand" onClick={() => setIsModalOpen(true)} style={{ marginTop: "1.5rem" }}>
                 Withdraw Funds
@@ -402,7 +464,9 @@ export default function Payouts() {
             </div>
             <div className="card">
               <div className="card-title">Pending Clearance</div>
-              <div className="card-value txt-warning">₹{Math.floor(pendingClearance).toLocaleString("en-IN")}</div>
+              <div className="card-value txt-warning">
+                {isUSD ? "$" : "₹"}{pendingClearance.toLocaleString(isUSD ? "en-US" : "en-IN", { minimumFractionDigits: isUSD ? 2 : 0, maximumFractionDigits: isUSD ? 2 : 0 })}
+              </div>
               <div className="card-desc">Recent support currently being processed by banks.</div>
               <div className="card-desc txt-muted" style={{ marginTop: "auto", paddingTop: "1rem", borderTop: "1px solid var(--border-faint)", fontSize: "0.8rem" }}>
                 Clears in 3 days.
@@ -410,7 +474,9 @@ export default function Payouts() {
             </div>
             <div className="card">
               <div className="card-title">Total Withdrawn</div>
-              <div className="card-value">₹{Math.floor(totalWithdrawn).toLocaleString("en-IN")}</div>
+              <div className="card-value">
+                {isUSD ? "$" : "₹"}{totalWithdrawn.toLocaleString(isUSD ? "en-US" : "en-IN", { minimumFractionDigits: isUSD ? 2 : 0, maximumFractionDigits: isUSD ? 2 : 0 })}
+              </div>
               <div className="card-desc">Lifetime earnings transferred to your accounts.</div>
               <div className="card-desc" style={{ marginTop: "auto", paddingTop: "1rem", borderTop: "1px solid var(--border-faint)", fontSize: "0.8rem" }}>
                 <button
@@ -636,7 +702,7 @@ export default function Payouts() {
                         style={{ textAlign: "right" }}
                         className={`t-amount ${tx.type === "credit" ? "txt-success" : "txt-muted"}`}
                       >
-                        {tx.type === "credit" ? "+" : "-"}₹{tx.amount.toLocaleString("en-IN")}
+                        {tx.type === "credit" ? "+" : "-"}{isUSD ? "$" : "₹"}{(tx.amount / (isUSD ? usdToInrRate : 1)).toLocaleString(isUSD ? "en-US" : "en-IN", { minimumFractionDigits: isUSD ? 2 : 0, maximumFractionDigits: isUSD ? 2 : 0 })}
                       </td>
                     </tr>
                   ))
@@ -666,8 +732,10 @@ export default function Payouts() {
             <div className="modal-body">
               <div
                 style={{
-                  background: "var(--bg-base)",
+                  display: "flex",
+                  justifyContent: "space-between",
                   padding: "12px",
+                  background: "var(--bg-base)",
                   borderRadius: "var(--radius-sm)",
                   border: "1px solid var(--border-subtle)",
                   display: "flex",
@@ -678,28 +746,30 @@ export default function Payouts() {
                 <span className="txt-muted" style={{ fontSize: "0.85rem" }}>
                   Available Balance
                 </span>
-                <span className="txt-success fw-600">₹{Math.floor(data.availableBalance).toLocaleString("en-IN")}</span>
+                <span className="txt-success fw-600">
+                  {isUSD ? "$" : "₹"}{(data.availableBalance / (isUSD ? usdToInrRate : 1)).toLocaleString(isUSD ? "en-US" : "en-IN", { minimumFractionDigits: isUSD ? 2 : 0, maximumFractionDigits: isUSD ? 2 : 0 })}
+                </span>
               </div>
 
               <div className="form-group">
                 <label>Amount to withdraw</label>
                 <div className="input-wrapper">
-                  <span className="input-prefix">₹</span>
+                  <span className="input-prefix">{isUSD ? "$" : "₹"}</span>
                   <input
                     type="number"
                     className="text-input"
                     placeholder="0.00"
-                    min="1000"
-                    max={data.availableBalance}
+                    min={isUSD ? "12" : "1000"}
+                    max={isUSD ? data.availableBalance / usdToInrRate : data.availableBalance}
                     value={withdrawAmount}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
                   />
-                  <button className="btn-max" onClick={() => setWithdrawAmount(data.availableBalance)}>
+                  <button className="btn-max" onClick={() => setWithdrawAmount(isUSD ? (data.availableBalance / usdToInrRate).toFixed(2) : data.availableBalance)}>
                     Max
                   </button>
                 </div>
                 <span className="txt-muted" style={{ fontSize: "0.75rem", marginTop: "6px", display: "inline-block" }}>
-                  Minimum withdrawal is ₹1,000.
+                  Minimum withdrawal is {isUSD ? "$12.00" : "₹1,000"}.
                 </span>
               </div>
 
