@@ -240,10 +240,10 @@ function PlatformUnifiedPageInner() {
             <SearchCreators onSelectProfile={handleSelectCreator} />
           )}
           {activeView === "profile" && (
-            <PublicProfile creator={selectedCreator} />
+            <PublicProfile creator={selectedCreator} userRegion={userRegion} />
           )}
           {activeView === "settings" && (
-            <SettingsForm />
+            <SettingsForm userRegion={userRegion} />
           )}
         </main>
       </div>

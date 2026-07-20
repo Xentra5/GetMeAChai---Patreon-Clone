@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import "../../app/platform/platform.css";
 
-export default function SettingsForm() {
+export default function SettingsForm({ userRegion }) {
   const [activeTab, setActiveTab] = useState("General");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -35,7 +35,11 @@ export default function SettingsForm() {
         if (response.ok) {
           const data = await response.json();
           setDisplayName(data.name || "");
-          setMonthlyGoal(data.monthlyGoal || "");
+          if (userRegion === "USA") {
+            setMonthlyGoal(data.monthlyGoal ? Math.round(data.monthlyGoal / 83.5) : "");
+          } else {
+            setMonthlyGoal(data.monthlyGoal || "");
+          }
           setCategory(data.category || "Engineering");
           setTwitterHandle(data.twitterHandle || "");
           setGithubHandle(data.githubHandle || "");
@@ -51,18 +55,19 @@ export default function SettingsForm() {
       }
     }
     loadSettings();
-  }, []);
+  }, [userRegion]);
 
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
+      const goalInINR = monthlyGoal ? (userRegion === "USA" ? Number(monthlyGoal) * 83.5 : Number(monthlyGoal)) : 0;
       const response = await fetch("/api/user/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: displayName,
-          monthlyGoal: monthlyGoal ? Number(monthlyGoal) : 0,
+          monthlyGoal: goalInINR,
           category,
           twitterHandle,
           githubHandle,
@@ -171,7 +176,7 @@ export default function SettingsForm() {
                 </div>
 
                 <div className="platform-form-group">
-                  <label>Monthly Goal (₹)</label>
+                  <label>Monthly Goal ({userRegion === "USA" ? "$" : "₹"})</label>
                   <input
                     type="number"
                     className="platform-form-input"

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import "../../app/platform/platform.css";
 
-export default function PublicProfile({ creator }) {
+export default function PublicProfile({ creator, userRegion: propUserRegion }) {
   const { data: session } = useSession();
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(!creator);
@@ -14,6 +14,30 @@ export default function PublicProfile({ creator }) {
   const [feed, setFeed] = useState([]);
   const [toasts, setToasts] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+
+  // Local region state syncing from prop or localStorage
+  const [userRegion, setUserRegion] = useState("USA");
+  React.useEffect(() => {
+    if (propUserRegion) {
+      setUserRegion(propUserRegion);
+    } else if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("userRegion");
+      if (saved) {
+        setUserRegion(saved);
+      }
+    }
+  }, [propUserRegion]);
+
+  const isUSD = userRegion === "USA";
+
+  // Automatically adjust default support amount preset on region change
+  React.useEffect(() => {
+    if (isUSD) {
+      setSelectedAmount(6);
+    } else {
+      setSelectedAmount(500);
+    }
+  }, [isUSD]);
 
   // Gated Content & Tiers state
   const [posts, setPosts] = useState([]);
@@ -64,9 +88,9 @@ export default function PublicProfile({ creator }) {
 
   const getButtonText = () => {
     if (selectedAmount === "Custom") {
-      return customAmount ? `Support with ₹${customAmount}` : "Enter Custom Amount";
+      return customAmount ? `Support with ${isUSD ? `$${customAmount}` : `₹${customAmount}`}` : "Enter Custom Amount";
     }
-    return `Support with ₹${selectedAmount}`;
+    return `Support with ${isUSD ? `$${selectedAmount}` : `₹${selectedAmount}`}`;
   };
 
   const getAvatarUrl = (url) => {
@@ -129,6 +153,8 @@ export default function PublicProfile({ creator }) {
       return;
     }
 
+    const amountInINR = isUSD ? amount * 83.5 : amount;
+
     setSubmitting(true);
     try {
       const res = await fetch("/api/support", {
@@ -137,13 +163,13 @@ export default function PublicProfile({ creator }) {
         body: JSON.stringify({
           name: session?.user?.name || session?.user?.email?.split("@")[0] || "Anonymous Supporter",
           to_username: creatorSlug,
-          amount: amount,
+          amount: amountInINR,
           message: supportMessage,
         }),
       });
 
       if (res.ok) {
-        addToast(`Successfully supported with ₹${amount}!`, "success");
+        addToast(`Successfully supported with ${isUSD ? `$${amount}` : `₹${amount}`}!`, "success");
         setSupportMessage("");
         setCustomAmount("");
         
@@ -162,12 +188,13 @@ export default function PublicProfile({ creator }) {
   };
 
   const handleSelectTierFromModal = (amount) => {
-    setSelectedAmount(amount);
+    const adjustedAmount = isUSD ? (amount === 100 ? 1.5 : amount === 500 ? 6 : 12) : amount;
+    setSelectedAmount(adjustedAmount);
     setShowTiersModal(false);
     const supportCard = document.querySelector(".platform-support-card");
     if (supportCard) {
       supportCard.scrollIntoView({ behavior: "smooth" });
-      addToast(`Selected ₹${amount} Tier! Please write a message to support.`, "info");
+      addToast(`Selected ${isUSD ? `$${adjustedAmount}` : `₹${adjustedAmount}`} Tier! Please write a message to support.`, "info");
     }
   };
 
@@ -275,7 +302,7 @@ export default function PublicProfile({ creator }) {
               <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.85rem" }}>
                   <span>🥉 Bronze Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>₹100+</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$1.50+" : "₹100+"}</span>
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "var(--platform-text-faint)", marginTop: "4px" }}>
                   Access to standard supporter updates.
@@ -284,7 +311,7 @@ export default function PublicProfile({ creator }) {
               <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.85rem" }}>
                   <span>🥈 Silver Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>₹500+</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$6.00+" : "₹500+"}</span>
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "var(--platform-text-faint)", marginTop: "4px" }}>
                   Access to behind-the-scenes progress updates.
@@ -293,7 +320,7 @@ export default function PublicProfile({ creator }) {
               <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.85rem" }}>
                   <span>🥇 Gold Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>₹1000+</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$12.00+" : "₹1000+"}</span>
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "var(--platform-text-faint)", marginTop: "4px" }}>
                   Access to priority posts & private repository links.
@@ -302,7 +329,7 @@ export default function PublicProfile({ creator }) {
             </div>
             {cumulativeSupport > 0 && (
               <div style={{ marginTop: "1rem", fontSize: "0.8rem", color: "var(--platform-success)", fontWeight: 600 }}>
-                ✓ Cumulative Support: ₹{cumulativeSupport}
+                ✓ Cumulative Support: {isUSD ? `$${(cumulativeSupport / 83.5).toFixed(2)}` : `₹${cumulativeSupport}`}
               </div>
             )}
           </div>
@@ -342,10 +369,10 @@ export default function PublicProfile({ creator }) {
                       onChange={(e) => setNewPostMinAmount(e.target.value)}
                       style={{ background: "#111", border: "1px solid var(--platform-border-strong)", borderRadius: "4px", color: "var(--platform-text-main)", fontSize: "0.8rem", padding: "4px 8px" }}
                     >
-                      <option value="0">Public (₹0)</option>
-                      <option value="100">🥉 Bronze Tier (₹100+)</option>
-                      <option value="500">🥈 Silver Tier (₹500+)</option>
-                      <option value="1000">🥇 Gold Tier (₹1000+)</option>
+                      <option value="0">Public ({isUSD ? "$0" : "₹0"})</option>
+                      <option value="100">🥉 Bronze Tier ({isUSD ? "$1.50+" : "₹100+"})</option>
+                      <option value="500">🥈 Silver Tier ({isUSD ? "$6.00+" : "₹500+"})</option>
+                      <option value="1000">🥇 Gold Tier ({isUSD ? "$12.00+" : "₹1000+"})</option>
                     </select>
                   </div>
                   <button 
@@ -376,20 +403,20 @@ export default function PublicProfile({ creator }) {
             </div>
 
             <div className="platform-amount-selector">
-              {[100, 500, 1000, "Custom"].map((amount) => (
+              {(isUSD ? [1.5, 6, 12, "Custom"] : [100, 500, 1000, "Custom"]).map((amount) => (
                 <button
                   key={amount}
                   className={`platform-amount-btn ${selectedAmount === amount ? "active" : ""}`}
                   onClick={() => handleAmountClick(amount)}
                 >
-                  {amount === "Custom" ? "Custom" : `₹${amount}`}
+                  {amount === "Custom" ? "Custom" : (isUSD ? `$${amount.toFixed(2)}` : `₹${amount}`)}
                 </button>
               ))}
             </div>
 
             {selectedAmount === "Custom" && (
               <div className="platform-custom-input-container">
-                <span>₹</span>
+                <span>{isUSD ? "$" : "₹"}</span>
                 <input
                   type="number"
                   placeholder="Enter custom amount"
@@ -446,7 +473,7 @@ export default function PublicProfile({ creator }) {
                   </p>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8rem" }}>
                     <span style={{ color: post.isLocked ? "var(--platform-warning)" : "var(--platform-success)", fontWeight: 500 }}>
-                      {post.minAmountRequired === 0 ? "Public Post" : `Requires ₹${post.minAmountRequired}+ Support`}
+                      {post.minAmountRequired === 0 ? "Public Post" : `Requires ${isUSD ? `$${(post.minAmountRequired / 83.5).toFixed(2)}+` : `₹${post.minAmountRequired}+`} Support`}
                     </span>
                   </div>
                 </div>
@@ -488,7 +515,7 @@ export default function PublicProfile({ creator }) {
                     </p>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem" }}>
                       <span style={{ color: "var(--platform-brand)", fontWeight: 600 }}>
-                        Bought Chai (₹{item.amount})
+                        Bought Chai ({isUSD ? `$${(item.amount / 83.5).toFixed(2)}` : `₹${item.amount}`})
                       </span>
                       <span style={{ color: "var(--platform-text-faint)" }}>❤️ Verified</span>
                     </div>
@@ -523,7 +550,7 @@ export default function PublicProfile({ creator }) {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.95rem" }}>
                   <span>🥉 Bronze Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>₹100</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$1.50" : "₹100"}</span>
                 </div>
                 <div style={{ fontSize: "0.8rem", color: "var(--platform-text-faint)", marginTop: "6px" }}>
                   Unlock supporter updates and public message boards.
@@ -536,7 +563,7 @@ export default function PublicProfile({ creator }) {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.95rem" }}>
                   <span>🥈 Silver Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>₹500</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$6.00" : "₹500"}</span>
                 </div>
                 <div style={{ fontSize: "0.8rem", color: "var(--platform-text-faint)", marginTop: "6px" }}>
                   Access behind-the-scenes progress posts.
@@ -549,7 +576,7 @@ export default function PublicProfile({ creator }) {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.95rem" }}>
                   <span>🥇 Gold Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>₹1000</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$12.00" : "₹1000"}</span>
                 </div>
                 <div style={{ fontSize: "0.8rem", color: "var(--platform-text-faint)", marginTop: "6px" }}>
                   Priority direct messages & private GitHub/repository links.
