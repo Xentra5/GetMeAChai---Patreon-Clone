@@ -72,6 +72,13 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
   * Displays financial indicators: **Available Balance**, **Pending Clearance**, and **Total Withdrawn**.
   * Contains a **Withdrawal Request Modal** allowing creators to instantly request payouts to their configured methods (Stripe, PayPal, Crypto).
   * Includes transaction logs with search, time frame, and status-based filtering options.
+* **Add Payout Method Portal (`app/dashboard/payouts/add/page.js` & [PayoutMethod.js](file:///d:/PracticeReact/getchai/models/PayoutMethod.js)):**
+  * **Region-Based Localization:** Offers a region-selector to choose between United States (USD) and India (INR) localizations.
+  * **Segmented Options:** Separates layout into **National / Domestic** and **International** tabs.
+  * **Multiple Payout Channels:**
+    * *National/Domestic:* Direct Bank Transfer (with Account Holder Name, Bank Name, Account Number, and IFSC validation) and UPI ID.
+    * *International:* PayPal, Stripe (Connected Accounts), Wise, Payoneer, International Wire Transfer (SWIFT/IBAN), and Pink/USDC Crypto Wallets (Polygon chain).
+  * **Dynamic Validation & Mongoose Persistence:** Validates credentials on submission and posts directly to `/api/dashboard/payouts/methods` to persist in MongoDB.
 
 ### 9. Unified Platform Hub & Gated Content (`app/dashboard/platform/page.js`)
 * **Advanced Search Creators (`Components/Platform/SearchCreators.js`):**
