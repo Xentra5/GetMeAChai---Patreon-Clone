@@ -13,11 +13,13 @@ import {
   Settings as SettingsIcon,
   Compass,
   Wallet,
-  MapPin
+  MapPin,
+  MessageSquare
 } from "lucide-react";
 import SearchCreators from "../../../Components/Platform/SearchCreators";
 import PublicProfile from "../../../Components/Platform/PublicProfile";
 import SettingsForm from "../../../Components/Platform/SettingsForm";
+import DirectMessagesView from "../../../Components/Platform/DirectMessagesView";
 import "../dashboard.css";
 import "../../platform/platform.css";
 
@@ -139,6 +141,15 @@ function PlatformUnifiedPageInner() {
             </span>
           </button>
           <button 
+            onClick={() => handleViewChange("dms")} 
+            className={`nav-item w-full text-left bg-transparent border-none cursor-pointer ${activeView === "dms" ? "active text-purple-400" : ""}`}
+          >
+            <span className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Direct Messages
+            </span>
+          </button>
+          <button 
             onClick={() => handleViewChange("settings")} 
             className={`nav-item w-full text-left bg-transparent border-none cursor-pointer ${activeView === "settings" ? "active text-purple-400" : ""}`}
           >
@@ -244,6 +255,9 @@ function PlatformUnifiedPageInner() {
           )}
           {activeView === "settings" && (
             <SettingsForm userRegion={userRegion} />
+          )}
+          {activeView === "dms" && (
+            <DirectMessagesView userRegion={userRegion} />
           )}
         </main>
       </div>

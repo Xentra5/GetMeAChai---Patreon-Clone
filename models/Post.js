@@ -6,6 +6,8 @@ const PostSchema = new mongoose.Schema(
     content: { type: String, required: true },
     creator_username: { type: String, required: true },
     minAmountRequired: { type: Number, default: 0 },
+    rewardName: { type: String, default: "" },
+    rewardUrl: { type: String, default: "" },
   },
   { timestamps: true }
 );

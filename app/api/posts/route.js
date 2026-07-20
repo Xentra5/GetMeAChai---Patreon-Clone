@@ -59,6 +59,8 @@ export async function GET(request) {
         minAmountRequired: post.minAmountRequired,
         isLocked: !isUnlocked,
         createdAt: post.createdAt,
+        rewardName: isUnlocked ? (post.rewardName || "") : "",
+        rewardUrl: isUnlocked ? (post.rewardUrl || "") : "",
       };
     });
 
@@ -88,7 +90,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Only creators can publish updates." }, { status: 403 });
     }
 
-    const { title, content, minAmountRequired } = await request.json();
+    const { title, content, minAmountRequired, rewardName, rewardUrl } = await request.json();
 
     if (!title || !content) {
       return NextResponse.json({ error: "Title and content are required." }, { status: 400 });
@@ -102,6 +104,8 @@ export async function POST(request) {
       content: content.trim(),
       creator_username: creatorSlug,
       minAmountRequired: Number(minAmountRequired) || 0,
+      rewardName: rewardName ? rewardName.trim() : "",
+      rewardUrl: rewardUrl ? rewardUrl.trim() : "",
     });
 
     return NextResponse.json({ success: true, post: newPost });

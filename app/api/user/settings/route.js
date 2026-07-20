@@ -26,6 +26,7 @@ export async function GET() {
       githubHandle: user.githubHandle || "",
       avatarUrl: user.avatarUrl || "https://i.pravatar.cc/100?img=11",
       profileViews: user.profileViews || 0,
+      supportToken: user.supportToken || "Chai",
     });
   } catch (error) {
     console.error("GET Settings error:", error);
@@ -41,7 +42,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { monthlyGoal, twitterHandle, githubHandle, name, category } = await request.json();
+    const { monthlyGoal, twitterHandle, githubHandle, name, category, supportToken } = await request.json();
 
     // Validate monthlyGoal if provided
     if (monthlyGoal !== undefined) {
@@ -62,6 +63,7 @@ export async function POST(request) {
     if (githubHandle !== undefined) updateFields.githubHandle = githubHandle.trim();
     if (name !== undefined) updateFields.name = name.trim();
     if (category !== undefined) updateFields.category = category.trim();
+    if (supportToken !== undefined) updateFields.supportToken = supportToken.trim();
 
     const user = await User.findOneAndUpdate(
       { email: session.user.email.toLowerCase() },

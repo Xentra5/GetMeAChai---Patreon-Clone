@@ -51,6 +51,10 @@ const UserSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        supportToken: {
+            type: String,
+            default: "Chai",
+        },
     },
     { timestamps: true } // Automatically creates createdAt and updatedAt fields
 );

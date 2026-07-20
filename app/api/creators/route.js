@@ -40,7 +40,7 @@ export async function GET(request) {
 
     // Fetch users whose role is "creator"
     const creators = await User.find(queryObj)
-      .select("name email avatarUrl twitterHandle githubHandle monthlyGoal profileViews category")
+      .select("name email avatarUrl twitterHandle githubHandle monthlyGoal profileViews category supportToken")
       .sort(sortObj)
       .lean();
 

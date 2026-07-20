@@ -49,6 +49,16 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
   const [submittingPost, setSubmittingPost] = useState(false);
   const [showTiersModal, setShowTiersModal] = useState(false);
 
+  // New features state declarations
+  const [newPostRewardName, setNewPostRewardName] = useState("");
+  const [newPostRewardUrl, setNewPostRewardUrl] = useState("");
+  const [totalSupportReceived, setTotalSupportReceived] = useState(0);
+  const [activeProfileTab, setActiveProfileTab] = useState("updates");
+  
+  const [messages, setMessages] = useState([]);
+  const [newMessageContent, setNewMessageContent] = useState("");
+  const [loadingMessages, setLoadingMessages] = useState(false);
+
   const addToast = (message, type = "success") => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
@@ -115,6 +125,7 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
       if (feedRes.ok) {
         const feedData = await feedRes.json();
         setFeed(feedData.payments || []);
+        setTotalSupportReceived(feedData.totalSupportSum || 0);
       }
 
       // 2. Fetch gated posts
@@ -133,6 +144,67 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
   React.useEffect(() => {
     fetchFeedAndPosts();
   }, [fetchFeedAndPosts]);
+
+  const tokenEmojis = {
+    Chai: "🍵",
+    Coffee: "☕",
+    Beer: "🍺",
+    Pizza: "🍕"
+  };
+  const supportToken = currentCreator.supportToken || "Chai";
+  const supportEmoji = tokenEmojis[supportToken] || "☕";
+
+  const fetchMessages = React.useCallback(async () => {
+    if (!creatorSlug) return;
+    setLoadingMessages(true);
+    try {
+      const res = await fetch(`/api/messages?creator=${creatorSlug}`);
+      if (res.ok) {
+        const data = await res.json();
+        setMessages(data.messages || []);
+      }
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, [creatorSlug]);
+
+  React.useEffect(() => {
+    if (activeProfileTab === "messages") {
+      fetchMessages();
+    }
+  }, [activeProfileTab, fetchMessages]);
+
+  const handleSendMessage = async (e) => {
+    if (e) e.preventDefault();
+    if (!newMessageContent.trim()) return;
+
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          creator: creatorSlug,
+          content: newMessageContent,
+        }),
+      });
+
+      if (res.ok) {
+        setNewMessageContent("");
+        fetchMessages();
+      } else {
+        const err = await res.json();
+        addToast(err.error || "Failed to send message.", "error");
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
+  };
+
+  const monthlyGoalVal = isUSD ? Math.round(currentCreator.monthlyGoal / 83.5) : currentCreator.monthlyGoal;
+  const supportReceivedVal = isUSD ? (totalSupportReceived / 83.5) : totalSupportReceived;
+  const progressPercent = monthlyGoalVal > 0 ? Math.min(Math.round((supportReceivedVal / monthlyGoalVal) * 100), 100) : 0;
 
   if (loading) {
     return (
@@ -213,6 +285,8 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
           title: newPostTitle,
           content: newPostContent,
           minAmountRequired: Number(newPostMinAmount) || 0,
+          rewardName: newPostRewardName,
+          rewardUrl: newPostRewardUrl,
         }),
       });
 
@@ -221,6 +295,8 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
         setNewPostTitle("");
         setNewPostContent("");
         setNewPostMinAmount("0");
+        setNewPostRewardName("");
+        setNewPostRewardUrl("");
         fetchFeedAndPosts();
       } else {
         const errData = await res.json();
@@ -265,6 +341,34 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
       <div className="platform-profile-layout">
         {/* Left Column: About & Tiers */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          {currentCreator.monthlyGoal > 0 && (
+            <div className="platform-card platform-card-accent-info" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h3 style={{ fontSize: "1rem", fontWeight: 600 }}>Goal Progress</h3>
+                <span style={{ fontSize: "0.85rem", color: "var(--platform-brand)", fontWeight: 600 }}>
+                  {progressPercent}%
+                </span>
+              </div>
+              <div style={{ height: "8px", width: "100%", background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden", position: "relative" }}>
+                <div style={{
+                  height: "100%",
+                  width: `${progressPercent}%`,
+                  background: "linear-gradient(90deg, var(--platform-brand) 0%, var(--platform-success) 100%)",
+                  borderRadius: "4px",
+                  transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)"
+                }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--platform-text-faint)" }}>
+                <span>
+                  {isUSD ? `$${supportReceivedVal.toFixed(2)}` : `₹${supportReceivedVal.toLocaleString("en-IN")}`} raised
+                </span>
+                <span>
+                  of {isUSD ? `$${monthlyGoalVal}` : `₹${monthlyGoalVal.toLocaleString("en-IN")}`} goal
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="platform-card">
             <h3 style={{ fontSize: "1.1rem", marginBottom: "12px", fontWeight: 600 }}>
               About
@@ -361,6 +465,26 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
                     style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "var(--platform-text-main)", minHeight: "80px", resize: "vertical", fontSize: "0.9rem", fontFamily: "inherit" }}
                   />
                 </div>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <div className="platform-custom-input-container" style={{ margin: 0, flex: 1 }}>
+                    <input
+                      type="text"
+                      placeholder="Attachment Name (e.g. Wallpapers)"
+                      value={newPostRewardName}
+                      onChange={(e) => setNewPostRewardName(e.target.value)}
+                      style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "var(--platform-text-main)", fontSize: "0.85rem" }}
+                    />
+                  </div>
+                  <div className="platform-custom-input-container" style={{ margin: 0, flex: 2 }}>
+                    <input
+                      type="text"
+                      placeholder="Reward URL (e.g. https://...)"
+                      value={newPostRewardUrl}
+                      onChange={(e) => setNewPostRewardUrl(e.target.value)}
+                      style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "var(--platform-text-main)", fontSize: "0.85rem" }}
+                    />
+                  </div>
+                </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <label style={{ fontSize: "0.8rem", color: "var(--platform-text-muted)" }}>Gated At:</label>
@@ -437,93 +561,251 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
             </button>
           </div>
 
-          {/* Creator Updates */}
-          <div className="platform-card" style={{ padding: 0 }}>
-            <h3 style={{ fontSize: "1.1rem", padding: "1.5rem 1.5rem 0.5rem 1.5rem", fontWeight: 600 }}>
-              Creator Updates
-            </h3>
-            {posts.length === 0 ? (
-              <div style={{ padding: "1.5rem", color: "var(--platform-text-faint)", fontSize: "0.9rem" }}>
-                No updates published yet by the creator.
-              </div>
-            ) : (
-              posts.map((post) => (
-                <div 
-                  key={post._id} 
-                  className="platform-feed-card" 
-                  style={{ 
-                    borderLeft: post.isLocked ? "3px solid var(--platform-warning)" : "3px solid var(--platform-success)",
-                    cursor: post.isLocked ? "pointer" : "default" 
-                  }}
-                  onClick={post.isLocked ? () => setShowTiersModal(true) : undefined}
-                >
-                  <div className="platform-fc-header">
-                    <span className="platform-fc-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      {post.isLocked ? "🔒" : "🔓"} {post.title}
-                    </span>
-                    <span className="platform-fc-time">
-                      {new Date(post.createdAt).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
-                  </div>
-                  <p className="platform-fc-body" style={{ color: post.isLocked ? "var(--platform-text-faint)" : "var(--platform-text-muted)" }}>
-                    {post.content}
-                  </p>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8rem" }}>
-                    <span style={{ color: post.isLocked ? "var(--platform-warning)" : "var(--platform-success)", fontWeight: 500 }}>
-                      {post.minAmountRequired === 0 ? "Public Post" : `Requires ${isUSD ? `$${(post.minAmountRequired / 83.5).toFixed(2)}+` : `₹${post.minAmountRequired}+`} Support`}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
+          {/* Feed Tabs Navigation */}
+          <div style={{ display: "flex", gap: "10px", borderBottom: "1px solid var(--platform-border-subtle)", paddingBottom: "10px", marginTop: "1rem" }}>
+            <button
+              className={`platform-filter-pill ${activeProfileTab === "updates" ? "active" : ""}`}
+              onClick={() => setActiveProfileTab("updates")}
+              style={{ padding: "6px 16px", fontSize: "0.85rem" }}
+            >
+              📢 Updates ({posts.length})
+            </button>
+            <button
+              className={`platform-filter-pill ${activeProfileTab === "activity" ? "active" : ""}`}
+              onClick={() => setActiveProfileTab("activity")}
+              style={{ padding: "6px 16px", fontSize: "0.85rem" }}
+            >
+              💬 Activity ({feed.length})
+            </button>
+            <button
+              className={`platform-filter-pill ${activeProfileTab === "messages" ? "active" : ""}`}
+              onClick={() => setActiveProfileTab("messages")}
+              style={{ padding: "6px 16px", fontSize: "0.85rem" }}
+            >
+              ✉ Direct Messages {(!isOwner && cumulativeSupport < 1000) ? "🔒" : ""}
+            </button>
           </div>
 
-          <div className="platform-card" style={{ padding: 0 }}>
-            <h3 style={{ fontSize: "1.1rem", padding: "1.5rem 1.5rem 0.5rem 1.5rem", fontWeight: 600 }}>
-              Supporter Messages
-            </h3>
-            {feed.length === 0 ? (
-              <div style={{ padding: "1.5rem", color: "var(--platform-text-faint)", fontSize: "0.9rem" }}>
-                No support messages yet. Be the first to support!
-              </div>
-            ) : (
-              feed.map((item) => {
-                const isLockedMsg = item.message?.includes("🔒");
-                return (
+          {/* Tab Content 1: Creator Updates */}
+          {activeProfileTab === "updates" && (
+            <div className="platform-card" style={{ padding: 0 }}>
+              <h3 style={{ fontSize: "1.1rem", padding: "1.5rem 1.5rem 0.5rem 1.5rem", fontWeight: 600 }}>
+                Creator Updates
+              </h3>
+              {posts.length === 0 ? (
+                <div style={{ padding: "1.5rem", color: "var(--platform-text-faint)", fontSize: "0.9rem" }}>
+                  No updates published yet by the creator.
+                </div>
+              ) : (
+                posts.map((post) => (
                   <div 
-                    key={item._id} 
-                    className="platform-feed-card"
-                    style={{ cursor: isLockedMsg ? "pointer" : "default" }}
-                    onClick={isLockedMsg ? () => setShowTiersModal(true) : undefined}
+                    key={post._id} 
+                    className="platform-feed-card" 
+                    style={{ 
+                      borderLeft: post.isLocked ? "3px solid var(--platform-warning)" : "3px solid var(--platform-success)",
+                      cursor: post.isLocked ? "pointer" : "default" 
+                    }}
+                    onClick={post.isLocked ? () => setShowTiersModal(true) : undefined}
                   >
                     <div className="platform-fc-header">
-                      <span className="platform-fc-title">{item.name}</span>
+                      <span className="platform-fc-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        {post.isLocked ? "🔒" : "🔓"} {post.title}
+                      </span>
                       <span className="platform-fc-time">
-                        {new Date(item.createdAt).toLocaleDateString(undefined, {
+                        {new Date(post.createdAt).toLocaleDateString(undefined, {
                           month: "short",
                           day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
                         })}
                       </span>
                     </div>
-                    <p className="platform-fc-body">
-                      {item.message || "Supported the creator! ☕"}
+                    <p className="platform-fc-body" style={{ color: post.isLocked ? "var(--platform-text-faint)" : "var(--platform-text-muted)" }}>
+                      {post.content}
                     </p>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem" }}>
-                      <span style={{ color: "var(--platform-brand)", fontWeight: 600 }}>
-                        Bought Chai ({isUSD ? `$${(item.amount / 83.5).toFixed(2)}` : `₹${item.amount}`})
+                    
+                    {/* Digital Reward Download Attachment */}
+                    {!post.isLocked && post.rewardUrl && (
+                      <div style={{
+                        marginTop: "12px",
+                        padding: "10px 14px",
+                        borderRadius: "6px",
+                        background: "rgba(168, 85, 247, 0.08)",
+                        border: "1px dashed var(--platform-brand)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center"
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontSize: "1.2rem" }}>🎁</span>
+                          <div style={{ display: "flex", flexDirection: "column" }}>
+                            <span style={{ fontWeight: 600, fontSize: "0.85rem", color: "var(--platform-text-main)" }}>
+                              {post.rewardName || "Digital Reward Attachment"}
+                            </span>
+                            <span style={{ fontSize: "0.7rem", color: "var(--platform-text-faint)" }}>
+                              Unlocked download reward
+                            </span>
+                          </div>
+                        </div>
+                        <a
+                          href={post.rewardUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="platform-btn-primary"
+                          style={{ padding: "6px 12px", fontSize: "0.75rem", textDecoration: "none" }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Download 📥
+                        </a>
+                      </div>
+                    )}
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8rem", marginTop: "8px" }}>
+                      <span style={{ color: post.isLocked ? "var(--platform-warning)" : "var(--platform-success)", fontWeight: 500 }}>
+                        {post.minAmountRequired === 0 ? "Public Post" : `Requires ${isUSD ? `$${(post.minAmountRequired / 83.5).toFixed(2)}+` : `₹${post.minAmountRequired}+`} Support`}
                       </span>
-                      <span style={{ color: "var(--platform-text-faint)" }}>❤️ Verified</span>
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Tab Content 2: Supporter Messages / Activity */}
+          {activeProfileTab === "activity" && (
+            <div className="platform-card" style={{ padding: 0 }}>
+              <h3 style={{ fontSize: "1.1rem", padding: "1.5rem 1.5rem 0.5rem 1.5rem", fontWeight: 600 }}>
+                Supporter Messages
+              </h3>
+              {feed.length === 0 ? (
+                <div style={{ padding: "1.5rem", color: "var(--platform-text-faint)", fontSize: "0.9rem" }}>
+                  No support messages yet. Be the first to support!
+                </div>
+              ) : (
+                feed.map((item) => {
+                  const isLockedMsg = item.message?.includes("🔒");
+                  return (
+                    <div 
+                      key={item._id} 
+                      className="platform-feed-card"
+                      style={{ cursor: isLockedMsg ? "pointer" : "default" }}
+                      onClick={isLockedMsg ? () => setShowTiersModal(true) : undefined}
+                    >
+                      <div className="platform-fc-header">
+                        <span className="platform-fc-title">{item.name}</span>
+                        <span className="platform-fc-time">
+                          {new Date(item.createdAt).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <p className="platform-fc-body">
+                        {item.message || `Supported the creator! ${supportEmoji}`}
+                      </p>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem" }}>
+                        <span style={{ color: "var(--platform-brand)", fontWeight: 600 }}>
+                          Bought {supportToken} ({isUSD ? `$${(item.amount / 83.5).toFixed(2)}` : `₹${item.amount}`})
+                        </span>
+                        <span style={{ color: "var(--platform-text-faint)" }}>❤️ Verified</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+
+          {/* Tab Content 3: Gold Tier Direct Messaging */}
+          {activeProfileTab === "messages" && (
+            <div className="platform-card" style={{ display: "flex", flexDirection: "column", gap: "12px", minHeight: "350px" }}>
+              <h3 style={{ fontSize: "1.1rem", fontWeight: 600 }}>
+                ✉ Gold Tier Direct Messaging
+              </h3>
+
+              {(!isOwner && cumulativeSupport < 1000) ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, padding: "2rem", textAlign: "center", gap: "10px" }}>
+                  <span style={{ fontSize: "2.5rem" }}>🔒</span>
+                  <h4 style={{ fontWeight: 600, color: "var(--platform-text-main)" }}>Messaging Gated</h4>
+                  <p style={{ fontSize: "0.85rem", color: "var(--platform-text-faint)", maxWidth: "340px" }}>
+                    Direct messaging is exclusive to 🥇 Gold Tier supporters (cumulative support of {isUSD ? "$12.00+" : "₹1,000+"}). Support more to unlock direct access!
+                  </p>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", flex: 1, gap: "12px" }}>
+                  {/* Chat Area */}
+                  <div style={{
+                    flex: 1,
+                    background: "rgba(0,0,0,0.2)",
+                    border: "1px solid var(--platform-border-strong)",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    maxHeight: "300px",
+                    overflowY: "auto",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                    minHeight: "200px"
+                  }}>
+                    {loadingMessages ? (
+                      <div style={{ textAlign: "center", color: "var(--platform-text-faint)", fontSize: "0.85rem", padding: "2rem" }}>
+                        Loading conversation...
+                      </div>
+                    ) : messages.length === 0 ? (
+                      <div style={{ textAlign: "center", color: "var(--platform-text-faint)", fontSize: "0.85rem", padding: "2rem" }}>
+                        No messages yet. Send a message to start the conversation!
+                      </div>
+                    ) : (
+                      messages.map((msg) => {
+                        const isMe = msg.senderEmail.toLowerCase() === session?.user?.email?.toLowerCase();
+                        return (
+                          <div
+                            key={msg._id}
+                            style={{
+                              alignSelf: isMe ? "flex-end" : "flex-start",
+                              background: isMe ? "var(--platform-brand)" : "rgba(255,255,255,0.06)",
+                              padding: "8px 12px",
+                              borderRadius: "8px",
+                              maxWidth: "70%",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "2px"
+                            }}
+                          >
+                            <span style={{ fontSize: "0.7rem", fontWeight: 700, color: isMe ? "rgba(255,255,255,0.8)" : "var(--platform-brand)" }}>
+                              {msg.senderName}
+                            </span>
+                            <p style={{ fontSize: "0.85rem", margin: 0, color: "#fff", whiteSpace: "pre-wrap" }}>
+                              {msg.content}
+                            </p>
+                            <span style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.4)", alignSelf: "flex-end" }}>
+                              {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Send box */}
+                  <form onSubmit={handleSendMessage} style={{ display: "flex", gap: "8px" }}>
+                    <div className="platform-custom-input-container" style={{ margin: 0, flex: 1 }}>
+                      <input
+                        type="text"
+                        placeholder="Type your message..."
+                        value={newMessageContent}
+                        onChange={(e) => setNewMessageContent(e.target.value)}
+                        style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "var(--platform-text-main)", fontSize: "0.9rem" }}
+                      />
+                    </div>
+                    <button type="submit" className="platform-btn-primary" style={{ padding: "0 18px" }}>
+                      Send 🚀
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

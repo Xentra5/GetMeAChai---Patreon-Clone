@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/db/connectDb";
 import Payment from "@/models/Payment";
 import User from "@/models/user";
+import WalletTransaction from "@/models/WalletTransaction";
 
 export async function GET(request) {
   try {
@@ -68,9 +69,16 @@ export async function GET(request) {
       };
     });
 
+    const allPayments = await Payment.find({
+      to_username: creatorSlug,
+      status: "success",
+    });
+    const totalSupportSum = allPayments.reduce((acc, pay) => acc + pay.amount, 0);
+
     return NextResponse.json({
       payments: processedPayments,
       isMember,
+      totalSupportSum,
     });
   } catch (error) {
     console.error("Error fetching support payments:", error);
@@ -81,6 +89,10 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Please sign in to support creators." }, { status: 401 });
+    }
+
     const { name, to_username, amount, message } = await request.json();
 
     if (!to_username || !amount) {
@@ -90,14 +102,61 @@ export async function POST(request) {
     await connectDB();
 
     const creatorSlug = to_username.toLowerCase().replace(/\s+/g, "");
+    const loggedUserEmail = session.user.email.toLowerCase();
+
+    // Find the logged-in user (supporter)
+    const loggedUser = await User.findOne({ email: loggedUserEmail });
+    if (!loggedUser) {
+      return NextResponse.json({ error: "Supporter profile not found" }, { status: 404 });
+    }
+
+    const supportAmount = Number(amount);
+    if (loggedUser.walletBalance < supportAmount) {
+      return NextResponse.json({
+        error: `Insufficient wallet balance. You have ₹${loggedUser.walletBalance.toLocaleString("en-IN")} INR, but support requires ₹${supportAmount.toLocaleString("en-IN")} INR.`
+      }, { status: 400 });
+    }
+
+    // Deduct from supporter's wallet
+    loggedUser.walletBalance -= supportAmount;
+    await loggedUser.save();
+
+    // Create wallet transaction record for supporter
+    await WalletTransaction.create({
+      email: loggedUserEmail,
+      amount: supportAmount,
+      type: "payment",
+      status: "success",
+      description: `Supported creator ${to_username}`,
+      paymentMethod: "Wallet",
+    });
+
+    // Find creator user to credit their wallet balance
+    const allUsers = await User.find({ role: "creator" });
+    const creatorUser = allUsers.find(u => (u.name || u.email.split("@")[0]).toLowerCase().replace(/\s+/g, "") === creatorSlug);
+
+    if (creatorUser) {
+      creatorUser.walletBalance = (creatorUser.walletBalance || 0) + supportAmount;
+      await creatorUser.save();
+
+      // Create wallet transaction record for creator
+      await WalletTransaction.create({
+        email: creatorUser.email.toLowerCase(),
+        amount: supportAmount,
+        type: "deposit",
+        status: "success",
+        description: `Received support from ${loggedUser.name || loggedUser.email}`,
+        paymentMethod: "Wallet",
+      });
+    }
 
     const newPayment = await Payment.create({
       name: name?.trim() || "Anonymous Supporter",
       to_username: creatorSlug,
-      amount: Number(amount),
+      amount: supportAmount,
       message: message?.trim() || "",
-      from_email: session?.user?.email ? session.user.email.toLowerCase() : "",
-      status: "success", // Mocking success for simulation
+      from_email: loggedUserEmail,
+      status: "success",
     });
 
     return NextResponse.json({ success: true, payment: newPayment });

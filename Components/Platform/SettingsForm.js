@@ -15,6 +15,7 @@ export default function SettingsForm({ userRegion }) {
   const [twitterHandle, setTwitterHandle] = useState("");
   const [githubHandle, setGithubHandle] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("https://i.pravatar.cc/100?img=11");
+  const [supportToken, setSupportToken] = useState("Chai");
 
   // Toast notifications state
   const [toasts, setToasts] = useState([]);
@@ -44,6 +45,7 @@ export default function SettingsForm({ userRegion }) {
           setTwitterHandle(data.twitterHandle || "");
           setGithubHandle(data.githubHandle || "");
           setAvatarUrl(data.avatarUrl || "https://i.pravatar.cc/100?img=11");
+          setSupportToken(data.supportToken || "Chai");
         } else {
           addToast("Failed to load settings profile.", "error");
         }
@@ -71,6 +73,7 @@ export default function SettingsForm({ userRegion }) {
           category,
           twitterHandle,
           githubHandle,
+          supportToken,
         }),
       });
 
@@ -184,6 +187,21 @@ export default function SettingsForm({ userRegion }) {
                     onChange={(e) => setMonthlyGoal(e.target.value)}
                     placeholder="Enter monthly goal amount"
                   />
+                </div>
+
+                <div className="platform-form-group">
+                  <label>Support Token / Emoji</label>
+                  <select
+                    className="platform-form-input"
+                    value={supportToken}
+                    onChange={(e) => setSupportToken(e.target.value)}
+                    style={{ background: "#000", border: "1px solid var(--platform-border-input)" }}
+                  >
+                    <option value="Chai">Chai 🍵</option>
+                    <option value="Coffee">Coffee ☕</option>
+                    <option value="Beer">Beer 🍺</option>
+                    <option value="Pizza">Pizza 🍕</option>
+                  </select>
                 </div>
 
                 <div className="platform-form-group">
