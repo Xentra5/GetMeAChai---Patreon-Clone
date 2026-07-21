@@ -20,7 +20,8 @@ import {
   Send,
   CreditCard,
   Globe,
-  MapPin
+  MapPin,
+  MessageSquare
 } from "lucide-react";
 import "../dashboard.css";
 
@@ -49,11 +50,51 @@ export default function Payouts() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTaxModalOpen, setIsTaxModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawMethod, setWithdrawMethod] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [payoutMethods, setPayoutMethods] = useState([]);
+
+  // Payout schedule dynamic states
+  const [scheduleNextDate, setScheduleNextDate] = useState("Friday, Oct 25");
+  const [scheduleProcessingTime, setScheduleProcessingTime] = useState("1-2 business days");
+  const [scheduleThreshold, setScheduleThreshold] = useState(1000);
+
+  useEffect(() => {
+    if (data) {
+      if (data.payoutNextDate) setScheduleNextDate(data.payoutNextDate);
+      if (data.payoutProcessingTime) setScheduleProcessingTime(data.payoutProcessingTime);
+      if (data.payoutMinimumThreshold !== undefined) setScheduleThreshold(data.payoutMinimumThreshold);
+    }
+  }, [data]);
+
+  const handleSaveScheduleModal = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/user/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          payoutNextDate: scheduleNextDate,
+          payoutProcessingTime: scheduleProcessingTime,
+          payoutMinimumThreshold: Number(scheduleThreshold),
+        }),
+      });
+      if (response.ok) {
+        setIsScheduleModalOpen(false);
+        await fetchPayouts();
+      } else {
+        alert("Failed to update payout schedule settings.");
+      }
+    } catch (err) {
+      console.error("Save schedule error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Helper to format payout methods dynamically
   const getFormattedMethodName = (method) => {
@@ -343,6 +384,12 @@ export default function Payouts() {
               Public Profile
             </span>
           </Link>
+          <Link href="/dashboard/platform?view=dms" className="nav-item">
+            <span className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Direct Messages
+            </span>
+          </Link>
           <Link href="/dashboard/platform?view=settings" className="nav-item">
             <span className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -612,23 +659,39 @@ export default function Payouts() {
 
             {/* Payout Schedule */}
             <div className="card">
-              <h2 style={{ fontSize: "1.1rem", fontWeight: "600", marginBottom: "1rem" }}>Payout Schedule</h2>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                <h2 style={{ fontSize: "1.1rem", fontWeight: "600", margin: 0 }}>Payout Schedule</h2>
+                <button 
+                  className="btn-outline" 
+                  onClick={() => setIsScheduleModalOpen(true)}
+                  style={{ fontSize: "0.75rem", padding: "4px 8px" }}
+                >
+                  Edit Schedule ⚙️
+                </button>
+              </div>
               <div className="schedule-box">
                 <p className="txt-muted" style={{ fontSize: "0.9rem" }}>
                   Next automatic payout
                 </p>
-                <div className="s-date">Friday, Oct 25</div>
+                <div className="s-date">{data?.payoutNextDate || scheduleNextDate}</div>
                 <p className="txt-muted" style={{ fontSize: "0.85rem" }}>
-                  Processing time: 1-2 business days
+                  Processing time: {data?.payoutProcessingTime || scheduleProcessingTime}
                 </p>
               </div>
               <div className="progress-container">
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                  <span>Minimum threshold: ₹1000</span>
-                  <span className="txt-success fw-600">Met</span>
+                  <span>Minimum threshold: ₹{data?.payoutMinimumThreshold ?? scheduleThreshold}</span>
+                  {availableBalance >= (data?.payoutMinimumThreshold ?? scheduleThreshold) ? (
+                    <span className="txt-success fw-600">Met</span>
+                  ) : (
+                    <span className="txt-muted fw-600">{Math.min(100, Math.round((availableBalance / (data?.payoutMinimumThreshold ?? scheduleThreshold)) * 100))}%</span>
+                  )}
                 </div>
                 <div className="progress-bar-bg">
-                  <div className="progress-bar-fill"></div>
+                  <div 
+                    className="progress-bar-fill" 
+                    style={{ width: `${Math.min(100, Math.round((availableBalance / (data?.payoutMinimumThreshold ?? scheduleThreshold)) * 100))}%` }}
+                  ></div>
                 </div>
               </div>
             </div>
@@ -923,6 +986,73 @@ export default function Payouts() {
                 🖨️ Print Statement
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT PAYOUT SCHEDULE MODAL */}
+      {isScheduleModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: "450px" }}>
+            <div className="modal-header">
+              <h2 style={{ fontSize: "1.2rem", fontWeight: "600", color: "#fff" }}>Edit Payout Schedule</h2>
+              <button className="close-btn" onClick={() => setIsScheduleModalOpen(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleSaveScheduleModal}>
+              <div className="modal-body" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                    Next Automatic Payout Date
+                  </label>
+                  <input
+                    type="text"
+                    className="select-input"
+                    value={scheduleNextDate}
+                    onChange={(e) => setScheduleNextDate(e.target.value)}
+                    placeholder="e.g. Friday, Oct 25"
+                    required
+                    style={{ width: "100%" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                    Processing Duration
+                  </label>
+                  <input
+                    type="text"
+                    className="select-input"
+                    value={scheduleProcessingTime}
+                    onChange={(e) => setScheduleProcessingTime(e.target.value)}
+                    placeholder="e.g. 1-2 business days"
+                    required
+                    style={{ width: "100%" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                    Minimum Threshold (₹)
+                  </label>
+                  <input
+                    type="number"
+                    className="select-input"
+                    value={scheduleThreshold}
+                    onChange={(e) => setScheduleThreshold(e.target.value)}
+                    required
+                    style={{ width: "100%" }}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer" style={{ marginTop: "1.5rem", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                <button type="button" className="btn-outline" onClick={() => setIsScheduleModalOpen(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-brand" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save Schedule"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

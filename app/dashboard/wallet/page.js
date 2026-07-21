@@ -25,7 +25,8 @@ import {
   Building2,
   Lock,
   Globe,
-  MapPin
+  MapPin,
+  MessageSquare
 } from "lucide-react";
 import "../dashboard.css";
 
@@ -717,6 +718,12 @@ export default function WalletPage() {
             <span className="flex items-center gap-2">
               <User className="w-4 h-4" />
               Public Profile
+            </span>
+          </Link>
+          <Link href="/dashboard/platform?view=dms" className="nav-item">
+            <span className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Direct Messages
             </span>
           </Link>
           <Link href="/dashboard/platform?view=settings" className="nav-item">

@@ -55,6 +55,34 @@ const UserSchema = new mongoose.Schema(
             type: String,
             default: "Chai",
         },
+        bronzePrice: {
+            type: Number,
+            default: 100,
+        },
+        silverPrice: {
+            type: Number,
+            default: 500,
+        },
+        goldPrice: {
+            type: Number,
+            default: 1000,
+        },
+        payoutScheduleFrequency: {
+            type: String,
+            default: "Every Friday",
+        },
+        payoutNextDate: {
+            type: String,
+            default: "Friday, Oct 25",
+        },
+        payoutProcessingTime: {
+            type: String,
+            default: "1-2 business days",
+        },
+        payoutMinimumThreshold: {
+            type: Number,
+            default: 1000,
+        },
     },
     { timestamps: true } // Automatically creates createdAt and updatedAt fields
 );

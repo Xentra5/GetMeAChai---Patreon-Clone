@@ -101,6 +101,10 @@ export async function GET(request) {
       availableBalance,
       pendingClearance,
       totalWithdrawn,
+      payoutScheduleFrequency: user.payoutScheduleFrequency || "Every Friday",
+      payoutNextDate: user.payoutNextDate || "Friday, Oct 25",
+      payoutProcessingTime: user.payoutProcessingTime || "1-2 business days",
+      payoutMinimumThreshold: user.payoutMinimumThreshold ?? 1000,
       history,
     });
   } catch (error) {

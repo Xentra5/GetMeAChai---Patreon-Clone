@@ -27,6 +27,13 @@ export async function GET() {
       avatarUrl: user.avatarUrl || "https://i.pravatar.cc/100?img=11",
       profileViews: user.profileViews || 0,
       supportToken: user.supportToken || "Chai",
+      bronzePrice: user.bronzePrice ?? 100,
+      silverPrice: user.silverPrice ?? 500,
+      goldPrice: user.goldPrice ?? 1000,
+      payoutScheduleFrequency: user.payoutScheduleFrequency || "Every Friday",
+      payoutNextDate: user.payoutNextDate || "Friday, Oct 25",
+      payoutProcessingTime: user.payoutProcessingTime || "1-2 business days",
+      payoutMinimumThreshold: user.payoutMinimumThreshold ?? 1000,
     });
   } catch (error) {
     console.error("GET Settings error:", error);
@@ -42,7 +49,21 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { monthlyGoal, twitterHandle, githubHandle, name, category, supportToken } = await request.json();
+    const {
+      monthlyGoal,
+      twitterHandle,
+      githubHandle,
+      name,
+      category,
+      supportToken,
+      bronzePrice,
+      silverPrice,
+      goldPrice,
+      payoutScheduleFrequency,
+      payoutNextDate,
+      payoutProcessingTime,
+      payoutMinimumThreshold,
+    } = await request.json();
 
     // Validate monthlyGoal if provided
     if (monthlyGoal !== undefined) {
@@ -64,6 +85,13 @@ export async function POST(request) {
     if (name !== undefined) updateFields.name = name.trim();
     if (category !== undefined) updateFields.category = category.trim();
     if (supportToken !== undefined) updateFields.supportToken = supportToken.trim();
+    if (bronzePrice !== undefined) updateFields.bronzePrice = Number(bronzePrice);
+    if (silverPrice !== undefined) updateFields.silverPrice = Number(silverPrice);
+    if (goldPrice !== undefined) updateFields.goldPrice = Number(goldPrice);
+    if (payoutScheduleFrequency !== undefined) updateFields.payoutScheduleFrequency = payoutScheduleFrequency.trim();
+    if (payoutNextDate !== undefined) updateFields.payoutNextDate = payoutNextDate.trim();
+    if (payoutProcessingTime !== undefined) updateFields.payoutProcessingTime = payoutProcessingTime.trim();
+    if (payoutMinimumThreshold !== undefined) updateFields.payoutMinimumThreshold = Number(payoutMinimumThreshold);
 
     const user = await User.findOneAndUpdate(
       { email: session.user.email.toLowerCase() },
@@ -78,12 +106,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       message: "Settings updated successfully",
-      user: {
-        name: user.name,
-        monthlyGoal: user.monthlyGoal,
-        twitterHandle: user.twitterHandle,
-        githubHandle: user.githubHandle,
-      },
+      user,
     });
   } catch (error) {
     console.error("Settings update error:", error);

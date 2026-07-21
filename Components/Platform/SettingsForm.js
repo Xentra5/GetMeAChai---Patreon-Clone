@@ -17,6 +17,17 @@ export default function SettingsForm({ userRegion }) {
   const [avatarUrl, setAvatarUrl] = useState("https://i.pravatar.cc/100?img=11");
   const [supportToken, setSupportToken] = useState("Chai");
 
+  // Custom membership tier prices
+  const [bronzePrice, setBronzePrice] = useState(100);
+  const [silverPrice, setSilverPrice] = useState(500);
+  const [goldPrice, setGoldPrice] = useState(1000);
+
+  // Payout Schedule settings
+  const [payoutScheduleFrequency, setPayoutScheduleFrequency] = useState("Every Friday");
+  const [payoutNextDate, setPayoutNextDate] = useState("Friday, Oct 25");
+  const [payoutProcessingTime, setPayoutProcessingTime] = useState("1-2 business days");
+  const [payoutMinimumThreshold, setPayoutMinimumThreshold] = useState(1000);
+
   // Toast notifications state
   const [toasts, setToasts] = useState([]);
 
@@ -46,6 +57,14 @@ export default function SettingsForm({ userRegion }) {
           setGithubHandle(data.githubHandle || "");
           setAvatarUrl(data.avatarUrl || "https://i.pravatar.cc/100?img=11");
           setSupportToken(data.supportToken || "Chai");
+
+          setBronzePrice(data.bronzePrice ?? 100);
+          setSilverPrice(data.silverPrice ?? 500);
+          setGoldPrice(data.goldPrice ?? 1000);
+          setPayoutScheduleFrequency(data.payoutScheduleFrequency || "Every Friday");
+          setPayoutNextDate(data.payoutNextDate || "Friday, Oct 25");
+          setPayoutProcessingTime(data.payoutProcessingTime || "1-2 business days");
+          setPayoutMinimumThreshold(data.payoutMinimumThreshold ?? 1000);
         } else {
           addToast("Failed to load settings profile.", "error");
         }
@@ -60,7 +79,7 @@ export default function SettingsForm({ userRegion }) {
   }, [userRegion]);
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setSaving(true);
     try {
       const goalInINR = monthlyGoal ? (userRegion === "USA" ? Number(monthlyGoal) * 83.5 : Number(monthlyGoal)) : 0;
@@ -74,6 +93,13 @@ export default function SettingsForm({ userRegion }) {
           twitterHandle,
           githubHandle,
           supportToken,
+          bronzePrice: Number(bronzePrice),
+          silverPrice: Number(silverPrice),
+          goldPrice: Number(goldPrice),
+          payoutScheduleFrequency,
+          payoutNextDate,
+          payoutProcessingTime,
+          payoutMinimumThreshold: Number(payoutMinimumThreshold),
         }),
       });
 
@@ -143,178 +169,341 @@ export default function SettingsForm({ userRegion }) {
 
         {/* Settings Form Content */}
         <div className="platform-settings-form">
-          <div className="platform-form-section">
-            <div className="platform-fs-header">Profile Information</div>
-            <form onSubmit={handleSave}>
-              <div className="platform-fs-body">
-                <div className="platform-avatar-upload">
-                  <img
-                    src={getAvatarUrl(avatarUrl)}
-                    className="platform-avatar-preview"
-                    alt="Avatar Preview"
-                  />
-                  <div>
+          {activeTab === "General" && (
+            <>
+              <div className="platform-form-section">
+                <div className="platform-fs-header">Profile Information</div>
+                <form onSubmit={handleSave}>
+                  <div className="platform-fs-body">
+                    <div className="platform-avatar-upload">
+                      <img
+                        src={getAvatarUrl(avatarUrl)}
+                        className="platform-avatar-preview"
+                        alt="Avatar Preview"
+                      />
+                      <div>
+                        <button
+                          type="button"
+                          className="platform-btn-outline"
+                          style={{ marginBottom: "8px" }}
+                        >
+                          Change Avatar
+                        </button>
+                        <p className="platform-form-hint">
+                          JPG, GIF or PNG. Max size of 2MB.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="platform-form-group">
+                      <label>Display Name</label>
+                      <input
+                        type="text"
+                        className="platform-form-input"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="platform-form-group">
+                      <label>Monthly Goal ({userRegion === "USA" ? "$" : "₹"})</label>
+                      <input
+                        type="number"
+                        className="platform-form-input"
+                        value={monthlyGoal}
+                        onChange={(e) => setMonthlyGoal(e.target.value)}
+                        placeholder="Enter monthly goal amount"
+                      />
+                    </div>
+
+                    <div className="platform-form-group">
+                      <label>Support Token / Emoji</label>
+                      <select
+                        className="platform-form-input"
+                        value={supportToken}
+                        onChange={(e) => setSupportToken(e.target.value)}
+                        style={{ background: "#000", border: "1px solid var(--platform-border-input)" }}
+                      >
+                        <option value="Chai">Chai 🍵</option>
+                        <option value="Coffee">Coffee ☕</option>
+                        <option value="Beer">Beer 🍺</option>
+                        <option value="Pizza">Pizza 🍕</option>
+                      </select>
+                    </div>
+
+                    <div className="platform-form-group">
+                      <label>Profile Category</label>
+                      <select
+                        className="platform-form-input"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        style={{ background: "#000", border: "1px solid var(--platform-border-input)" }}
+                      >
+                        <option value="Design">Design</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Writing">Writing</option>
+                        <option value="Video">Video</option>
+                      </select>
+                    </div>
+
+                    <div className="platform-form-group">
+                      <label>Twitter Handle</label>
+                      <input
+                        type="text"
+                        className="platform-form-input"
+                        value={twitterHandle}
+                        onChange={(e) => setTwitterHandle(e.target.value)}
+                        placeholder="@handle"
+                      />
+                    </div>
+
+                    <div className="platform-form-group">
+                      <label>GitHub Username</label>
+                      <input
+                        type="text"
+                        className="platform-form-input"
+                        value={githubHandle}
+                        onChange={(e) => setGithubHandle(e.target.value)}
+                        placeholder="username"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="platform-fs-footer">
+                    <button 
+                      type="submit" 
+                      className="platform-btn-primary" 
+                      disabled={saving}
+                    >
+                      {saving ? "Saving Changes..." : "Save Changes"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="platform-form-section">
+                <div className="platform-fs-header">Social Connections</div>
+                <div className="platform-fs-body">
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      borderBottom: "1px solid var(--platform-border-faint)",
+                      paddingBottom: "1rem",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 500, fontSize: "0.9rem" }}>
+                        Twitter Account
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "var(--platform-text-faint)",
+                          marginTop: "2px",
+                        }}
+                      >
+                        {twitterHandle ? `@${twitterHandle.replace('@', '')}` : "Not Connected"}
+                      </div>
+                    </div>
                     <button
                       type="button"
                       className="platform-btn-outline"
-                      style={{ marginBottom: "8px" }}
+                      style={{ color: "var(--platform-text-muted)" }}
                     >
-                      Change Avatar
+                      {twitterHandle ? "Disconnect" : "Connect"}
                     </button>
-                    <p className="platform-form-hint">
-                      JPG, GIF or PNG. Max size of 2MB.
-                    </p>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 500, fontSize: "0.9rem" }}>
+                        GitHub Account
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "var(--platform-text-faint)",
+                          marginTop: "2px",
+                        }}
+                      >
+                        {githubHandle ? `@${githubHandle.replace('@', '')}` : "Connect your repositories"}
+                      </div>
+                    </div>
+                    <button type="button" className="platform-btn-outline">
+                      {githubHandle ? "Disconnect" : "Connect"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === "Public Profile" && (
+            <div className="platform-form-section">
+              <div className="platform-fs-header">Membership Tier Pricing</div>
+              <form onSubmit={handleSave}>
+                <div className="platform-fs-body">
+                  <p className="platform-form-hint" style={{ marginBottom: "1rem" }}>
+                    Configure the monthly price for each support level. Prices are stored in INR (₹) and automatically converted to USD ($) on demand.
+                  </p>
+                  
+                  <div className="platform-form-group">
+                    <label>🥉 Bronze Tier Price (₹)</label>
+                    <input
+                      type="number"
+                      className="platform-form-input"
+                      value={bronzePrice}
+                      onChange={(e) => setBronzePrice(e.target.value)}
+                      required
+                    />
+                    <span className="platform-form-hint">
+                      Equivalency: ~${(bronzePrice / 83.5).toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="platform-form-group">
+                    <label>🥈 Silver Tier Price (₹)</label>
+                    <input
+                      type="number"
+                      className="platform-form-input"
+                      value={silverPrice}
+                      onChange={(e) => setSilverPrice(e.target.value)}
+                      required
+                    />
+                    <span className="platform-form-hint">
+                      Equivalency: ~${(silverPrice / 83.5).toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="platform-form-group">
+                    <label>🥇 Gold Tier Price (₹)</label>
+                    <input
+                      type="number"
+                      className="platform-form-input"
+                      value={goldPrice}
+                      onChange={(e) => setGoldPrice(e.target.value)}
+                      required
+                    />
+                    <span className="platform-form-hint">
+                      Equivalency: ~${(goldPrice / 83.5).toFixed(2)}
+                    </span>
                   </div>
                 </div>
 
-                <div className="platform-form-group">
-                  <label>Display Name</label>
-                  <input
-                    type="text"
-                    className="platform-form-input"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="platform-form-group">
-                  <label>Monthly Goal ({userRegion === "USA" ? "$" : "₹"})</label>
-                  <input
-                    type="number"
-                    className="platform-form-input"
-                    value={monthlyGoal}
-                    onChange={(e) => setMonthlyGoal(e.target.value)}
-                    placeholder="Enter monthly goal amount"
-                  />
-                </div>
-
-                <div className="platform-form-group">
-                  <label>Support Token / Emoji</label>
-                  <select
-                    className="platform-form-input"
-                    value={supportToken}
-                    onChange={(e) => setSupportToken(e.target.value)}
-                    style={{ background: "#000", border: "1px solid var(--platform-border-input)" }}
+                <div className="platform-fs-footer">
+                  <button 
+                    type="submit" 
+                    className="platform-btn-primary" 
+                    disabled={saving}
                   >
-                    <option value="Chai">Chai 🍵</option>
-                    <option value="Coffee">Coffee ☕</option>
-                    <option value="Beer">Beer 🍺</option>
-                    <option value="Pizza">Pizza 🍕</option>
-                  </select>
+                    {saving ? "Saving Prices..." : "Save Tier Prices"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {activeTab === "Payouts" && (
+            <div className="platform-form-section">
+              <div className="platform-fs-header">Payout Schedule Customization</div>
+              <form onSubmit={handleSave}>
+                <div className="platform-fs-body">
+                  <p className="platform-form-hint" style={{ marginBottom: "1rem" }}>
+                    Customize your payout frequency, next scheduled date, processing timeframe, and minimal payout threshold.
+                  </p>
+
+                  <div className="platform-form-group">
+                    <label>Payout Frequency</label>
+                    <input
+                      type="text"
+                      className="platform-form-input"
+                      value={payoutScheduleFrequency}
+                      onChange={(e) => setPayoutScheduleFrequency(e.target.value)}
+                      placeholder="e.g. Every Friday, Monthly, Bi-weekly"
+                      required
+                    />
+                  </div>
+
+                  <div className="platform-form-group">
+                    <label>Next Payout Date</label>
+                    <input
+                      type="text"
+                      className="platform-form-input"
+                      value={payoutNextDate}
+                      onChange={(e) => setPayoutNextDate(e.target.value)}
+                      placeholder="e.g. Friday, Oct 25"
+                      required
+                    />
+                  </div>
+
+                  <div className="platform-form-group">
+                    <label>Processing Duration</label>
+                    <input
+                      type="text"
+                      className="platform-form-input"
+                      value={payoutProcessingTime}
+                      onChange={(e) => setPayoutProcessingTime(e.target.value)}
+                      placeholder="e.g. 1-2 business days, Instant"
+                      required
+                    />
+                  </div>
+
+                  <div className="platform-form-group">
+                    <label>Minimum Threshold (₹)</label>
+                    <input
+                      type="number"
+                      className="platform-form-input"
+                      value={payoutMinimumThreshold}
+                      onChange={(e) => setPayoutMinimumThreshold(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
 
-                <div className="platform-form-group">
-                  <label>Profile Category</label>
-                  <select
-                    className="platform-form-input"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    style={{ background: "#000", border: "1px solid var(--platform-border-input)" }}
+                <div className="platform-fs-footer">
+                  <button 
+                    type="submit" 
+                    className="platform-btn-primary" 
+                    disabled={saving}
                   >
-                    <option value="Design">Design</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Writing">Writing</option>
-                    <option value="Video">Video</option>
-                  </select>
+                    {saving ? "Saving Payouts..." : "Save Payout Settings"}
+                  </button>
                 </div>
+              </form>
+            </div>
+          )}
 
-                <div className="platform-form-group">
-                  <label>Twitter Handle</label>
-                  <input
-                    type="text"
-                    className="platform-form-input"
-                    value={twitterHandle}
-                    onChange={(e) => setTwitterHandle(e.target.value)}
-                    placeholder="@handle"
-                  />
+          {activeTab === "Security" && (
+            <div className="platform-form-section">
+              <div className="platform-fs-header">Account Security</div>
+              <div className="platform-fs-body">
+                <p style={{ color: "var(--platform-text-muted)", fontSize: "0.9rem" }}>
+                  To maintain the security of your account, you can update your password below.
+                </p>
+                <div className="platform-form-group" style={{ marginTop: "1rem" }}>
+                  <label>Current Password</label>
+                  <input type="password" className="platform-form-input" placeholder="••••••••" disabled />
                 </div>
-
                 <div className="platform-form-group">
-                  <label>GitHub Username</label>
-                  <input
-                    type="text"
-                    className="platform-form-input"
-                    value={githubHandle}
-                    onChange={(e) => setGithubHandle(e.target.value)}
-                    placeholder="username"
-                  />
+                  <label>New Password</label>
+                  <input type="password" className="platform-form-input" placeholder="New password" disabled />
                 </div>
               </div>
-              
               <div className="platform-fs-footer">
-                <button 
-                  type="submit" 
-                  className="platform-btn-primary" 
-                  disabled={saving}
-                >
-                  {saving ? "Saving Changes..." : "Save Changes"}
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <div className="platform-form-section">
-            <div className="platform-fs-header">Social Connections</div>
-            <div className="platform-fs-body">
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  borderBottom: "1px solid var(--platform-border-faint)",
-                  paddingBottom: "1rem",
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 500, fontSize: "0.9rem" }}>
-                    Twitter Account
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "0.8rem",
-                      color: "var(--platform-text-faint)",
-                      marginTop: "2px",
-                    }}
-                  >
-                    {twitterHandle ? `@${twitterHandle.replace('@', '')}` : "Not Connected"}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="platform-btn-outline"
-                  style={{ color: "var(--platform-text-muted)" }}
-                >
-                  {twitterHandle ? "Disconnect" : "Connect"}
-                </button>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 500, fontSize: "0.9rem" }}>
-                    GitHub Account
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "0.8rem",
-                      color: "var(--platform-text-faint)",
-                      marginTop: "2px",
-                    }}
-                  >
-                    {githubHandle ? `@${githubHandle.replace('@', '')}` : "Connect your repositories"}
-                  </div>
-                </div>
-                <button type="button" className="platform-btn-outline">
-                  {githubHandle ? "Disconnect" : "Connect"}
+                <button className="platform-btn-primary" disabled>
+                  Update Password
                 </button>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

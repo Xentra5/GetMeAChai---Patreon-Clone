@@ -202,6 +202,10 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
     }
   };
 
+  const bronzeVal = currentCreator.bronzePrice ?? 100;
+  const silverVal = currentCreator.silverPrice ?? 500;
+  const goldVal = currentCreator.goldPrice ?? 1000;
+
   const monthlyGoalVal = isUSD ? Math.round(currentCreator.monthlyGoal / 83.5) : currentCreator.monthlyGoal;
   const supportReceivedVal = isUSD ? (totalSupportReceived / 83.5) : totalSupportReceived;
   const progressPercent = monthlyGoalVal > 0 ? Math.min(Math.round((supportReceivedVal / monthlyGoalVal) * 100), 100) : 0;
@@ -216,6 +220,21 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
 
   const handleAmountClick = (amount) => {
     setSelectedAmount(amount);
+  };
+
+  const handleSelectTier = (amountInINR) => {
+    const adjustedAmount = isUSD ? Number((amountInINR / 83.5).toFixed(2)) : amountInINR;
+    setSelectedAmount(adjustedAmount);
+    const supportCard = document.querySelector(".platform-support-card");
+    if (supportCard) {
+      supportCard.scrollIntoView({ behavior: "smooth" });
+      addToast(`Selected ${isUSD ? `$${adjustedAmount}` : `₹${adjustedAmount}`} Tier!`, "success");
+    }
+  };
+
+  const handleSelectTierFromModal = (amountInINR) => {
+    handleSelectTier(amountInINR);
+    setShowTiersModal(false);
   };
 
   const handleSupport = async () => {
@@ -256,17 +275,6 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
       addToast("Failed to connect to the server.", "error");
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleSelectTierFromModal = (amount) => {
-    const adjustedAmount = isUSD ? (amount === 100 ? 1.5 : amount === 500 ? 6 : 12) : amount;
-    setSelectedAmount(adjustedAmount);
-    setShowTiersModal(false);
-    const supportCard = document.querySelector(".platform-support-card");
-    if (supportCard) {
-      supportCard.scrollIntoView({ behavior: "smooth" });
-      addToast(`Selected ${isUSD ? `$${adjustedAmount}` : `₹${adjustedAmount}`} Tier! Please write a message to support.`, "info");
     }
   };
 
@@ -400,31 +408,45 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
               Membership Tiers
             </h3>
             <p style={{ fontSize: "0.8rem", color: "var(--platform-text-muted)", marginBottom: "1rem" }}>
-              Unlock exclusive creator content by supporting at different levels:
+              Unlock exclusive creator content by supporting at different levels (click to select):
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)" }}>
+              <div 
+                onClick={() => handleSelectTier(bronzeVal)}
+                style={{ padding: "10px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)", cursor: "pointer", transition: "all 0.2s ease" }}
+                className="hover:border-purple-500"
+              >
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.85rem" }}>
                   <span>🥉 Bronze Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$1.50+" : "₹100+"}</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? `$${(bronzeVal / 83.5).toFixed(2)}+` : `₹${bronzeVal}+`}</span>
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "var(--platform-text-faint)", marginTop: "4px" }}>
                   Access to standard supporter updates.
                 </div>
               </div>
-              <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)" }}>
+
+              <div 
+                onClick={() => handleSelectTier(silverVal)}
+                style={{ padding: "10px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)", cursor: "pointer", transition: "all 0.2s ease" }}
+                className="hover:border-purple-500"
+              >
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.85rem" }}>
                   <span>🥈 Silver Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$6.00+" : "₹500+"}</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? `$${(silverVal / 83.5).toFixed(2)}+` : `₹${silverVal}+`}</span>
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "var(--platform-text-faint)", marginTop: "4px" }}>
                   Access to behind-the-scenes progress updates.
                 </div>
               </div>
-              <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)" }}>
+
+              <div 
+                onClick={() => handleSelectTier(goldVal)}
+                style={{ padding: "10px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)", cursor: "pointer", transition: "all 0.2s ease" }}
+                className="hover:border-purple-500"
+              >
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.85rem" }}>
                   <span>🥇 Gold Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$12.00+" : "₹1000+"}</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? `$${(goldVal / 83.5).toFixed(2)}+` : `₹${goldVal}+`}</span>
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "var(--platform-text-faint)", marginTop: "4px" }}>
                   Access to priority posts & private repository links.
@@ -494,9 +516,9 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
                       style={{ background: "#111", border: "1px solid var(--platform-border-strong)", borderRadius: "4px", color: "var(--platform-text-main)", fontSize: "0.8rem", padding: "4px 8px" }}
                     >
                       <option value="0">Public ({isUSD ? "$0" : "₹0"})</option>
-                      <option value="100">🥉 Bronze Tier ({isUSD ? "$1.50+" : "₹100+"})</option>
-                      <option value="500">🥈 Silver Tier ({isUSD ? "$6.00+" : "₹500+"})</option>
-                      <option value="1000">🥇 Gold Tier ({isUSD ? "$12.00+" : "₹1000+"})</option>
+                      <option value={bronzeVal}>🥉 Bronze Tier ({isUSD ? `$${(bronzeVal / 83.5).toFixed(2)}+` : `₹${bronzeVal}+`})</option>
+                      <option value={silverVal}>🥈 Silver Tier ({isUSD ? `$${(silverVal / 83.5).toFixed(2)}+` : `₹${silverVal}+`})</option>
+                      <option value={goldVal}>🥇 Gold Tier ({isUSD ? `$${(goldVal / 83.5).toFixed(2)}+` : `₹${goldVal}+`})</option>
                     </select>
                   </div>
                   <button 
@@ -527,13 +549,16 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
             </div>
 
             <div className="platform-amount-selector">
-              {(isUSD ? [1.5, 6, 12, "Custom"] : [100, 500, 1000, "Custom"]).map((amount) => (
+              {(isUSD 
+                ? [Number((bronzeVal / 83.5).toFixed(2)), Number((silverVal / 83.5).toFixed(2)), Number((goldVal / 83.5).toFixed(2)), "Custom"] 
+                : [bronzeVal, silverVal, goldVal, "Custom"]
+              ).map((amount) => (
                 <button
                   key={amount}
                   className={`platform-amount-btn ${selectedAmount === amount ? "active" : ""}`}
                   onClick={() => handleAmountClick(amount)}
                 >
-                  {amount === "Custom" ? "Custom" : (isUSD ? `$${amount.toFixed(2)}` : `₹${amount}`)}
+                  {amount === "Custom" ? "Custom" : (isUSD ? `$${amount}` : `₹${amount}`)}
                 </button>
               ))}
             </div>
@@ -827,12 +852,12 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <div 
-                onClick={() => handleSelectTierFromModal(100)}
+                onClick={() => handleSelectTierFromModal(bronzeVal)}
                 style={{ padding: "14px", borderRadius: "10px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)", cursor: "pointer", transition: "var(--platform-transition)" }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.95rem" }}>
                   <span>🥉 Bronze Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$1.50" : "₹100"}</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? `$${(bronzeVal / 83.5).toFixed(2)}` : `₹${bronzeVal}`}</span>
                 </div>
                 <div style={{ fontSize: "0.8rem", color: "var(--platform-text-faint)", marginTop: "6px" }}>
                   Unlock supporter updates and public message boards.
@@ -840,12 +865,12 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
               </div>
 
               <div 
-                onClick={() => handleSelectTierFromModal(500)}
+                onClick={() => handleSelectTierFromModal(silverVal)}
                 style={{ padding: "14px", borderRadius: "10px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)", cursor: "pointer", transition: "var(--platform-transition)" }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.95rem" }}>
                   <span>🥈 Silver Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$6.00" : "₹500"}</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? `$${(silverVal / 83.5).toFixed(2)}` : `₹${silverVal}`}</span>
                 </div>
                 <div style={{ fontSize: "0.8rem", color: "var(--platform-text-faint)", marginTop: "6px" }}>
                   Access behind-the-scenes progress posts.
@@ -853,12 +878,12 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
               </div>
 
               <div 
-                onClick={() => handleSelectTierFromModal(1000)}
+                onClick={() => handleSelectTierFromModal(goldVal)}
                 style={{ padding: "14px", borderRadius: "10px", background: "rgba(255,255,255,0.02)", border: "1px solid var(--platform-border-subtle)", cursor: "pointer", transition: "var(--platform-transition)" }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "0.95rem" }}>
                   <span>🥇 Gold Tier</span>
-                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? "$12.00" : "₹1000"}</span>
+                  <span style={{ color: "var(--platform-brand)" }}>{isUSD ? `$${(goldVal / 83.5).toFixed(2)}` : `₹${goldVal}`}</span>
                 </div>
                 <div style={{ fontSize: "0.8rem", color: "var(--platform-text-faint)", marginTop: "6px" }}>
                   Priority direct messages & private GitHub/repository links.
