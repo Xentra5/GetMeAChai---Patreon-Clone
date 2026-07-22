@@ -79,7 +79,11 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
     * *National/Domestic:* Direct Bank Transfer (with Account Holder Name, Bank Name, Account Number, and IFSC validation) and UPI ID.
     * *International:* PayPal, Stripe (Connected Accounts), Wise, Payoneer, International Wire Transfer (SWIFT/IBAN), and Pink/USDC Crypto Wallets (Polygon chain).
   * **Dynamic Validation & Mongoose Persistence:** Validates credentials on submission and posts directly to `/api/dashboard/payouts/methods` to persist in MongoDB.
-
+* **Virtual Wallet & Deposits System (`app/dashboard/wallet/page.js` & [WalletTransaction.js](file:///d:/PracticeReact/getchai/models/WalletTransaction.js)):**
+  * **Mock Deposit Manager:** Provides interface to load mock currency (INR) using preset buttons (e.g., ₹500, ₹2,000) or custom input values.
+  * **Ledger Accounting:** Persists deposit, payment, and withdrawal transactions on a secure schema, rendering a queryable transaction list with filter states.
+  * **Unified Balance Display:** Renders the creator's live wallet balance in metrics dashboards and navigation panels.
+ 
 ### 9. Unified Platform Hub & Gated Content (`app/dashboard/platform/page.js`)
 * **Advanced Search Creators (`Components/Platform/SearchCreators.js`):**
   * Live category filtering ribbon (`All`, `Design`, `Engineering`, `Writing`, `Video`).
@@ -95,6 +99,15 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
   * Protects the creator's support message feed.
   * Full message details are visible to the creator themselves or any supporter who has contributed a lifetime total of at least ₹100.
   * Other users see obfuscated messages marked with a lock badge (`🔒 Locked. Support this creator to unlock the message feed!`).
+ 
+### 10. Direct Messaging System (`Components/Platform/DirectMessagesView.js` & [Message.js](file:///d:/PracticeReact/getchai/models/Message.js))
+* **In-App Supporter-Creator Chat:** Fully styled direct messaging system that lets creators and their supporters interact directly.
+* **Conversation Aggregation:** Automatically groups message history under thread tabs, compiling a active list of unique interlocutors in a responsive sidebar.
+* **Secure API Delivery:** Direct messages post and fetch from `/api/messages` and `/api/messages/conversations` dynamically, persisting in a secure MongoDB collection.
+ 
+### 11. Payout Configuration & Threshold Safeguards
+* **Payout Schedule Frequency:** Creators can customize their automatic deposit payouts (e.g. Every Friday, Monthly, or Manual) in their settings.
+* **Minimum Withdrawal Enforcement:** Restricts creator balance withdrawals below a configurable threshold (e.g., minimum ₹1,000 withdrawal) to safeguard billing transfers.
 
 ---
 
