@@ -51,6 +51,7 @@ export default function AudienceInsights() {
   const [loading, setLoading] = useState(true);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [selectedRange, setSelectedRange] = useState("Last 30 Days");
+  const [showMembersModal, setShowMembersModal] = useState(false);
 
   // Counter states for animated values
   const [totalSupporters, setTotalSupporters] = useState(0);
@@ -581,7 +582,11 @@ export default function AudienceInsights() {
                   </p>
                 )}
 
-                <button className="btn-outline" style={{ width: "100%", marginTop: "10px", borderColor: "var(--border-faint)" }}>
+                <button 
+                  className="btn-outline" 
+                  style={{ width: "100%", marginTop: "10px", borderColor: "var(--border-faint)" }}
+                  onClick={() => setShowMembersModal(true)}
+                >
                   View Full Supporter List
                 </button>
               </div>
@@ -607,6 +612,85 @@ export default function AudienceInsights() {
           </div>
         </main>
       </div>
+
+      {showMembersModal && (
+        <div style={{ position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0, 0, 0, 0.8)", zIndex: 1100 }}>
+          <div className="card" style={{ maxWidth: "750px", width: "90%", padding: "2rem", maxHeight: "80vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: "1.5rem", background: "var(--bg-surface)", border: "1px solid var(--border-strong)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h2 style={{ fontSize: "1.4rem", fontWeight: 700 }}>👥 Subscribed Members & Tiers Directory</h2>
+              <button 
+                onClick={() => setShowMembersModal(false)}
+                style={{ background: "none", border: "none", color: "var(--text-faint)", fontSize: "1.5rem", cursor: "pointer" }}
+              >
+                &times;
+              </button>
+            </div>
+            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "-10px" }}>
+              Full directory of active supporters showing their respective membership levels, emails, contribution frequency, and total Lifetime Value (LTV).
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {data.allMembers && data.allMembers.length > 0 ? (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid var(--border-subtle)", color: "var(--text-muted)" }}>
+                        <th style={{ padding: "10px" }}>Member</th>
+                        <th style={{ padding: "10px" }}>Email</th>
+                        <th style={{ padding: "10px" }}>Membership Level</th>
+                        <th style={{ padding: "10px" }}>Lifetime Value (LTV)</th>
+                        <th style={{ padding: "10px" }}>Supports Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.allMembers.map((member, index) => {
+                        let tierColor = "#a855f7"; // purple
+                        if (member.tier === "Silver Member") tierColor = "#10b981"; // green
+                        if (member.tier === "Bronze Member") tierColor = "#f59e0b"; // yellow
+
+                        return (
+                          <tr key={index} style={{ borderBottom: "1px solid rgba(255,255,255,0.02)" }}>
+                            <td style={{ padding: "10px", display: "flex", alignItems: "center", gap: "10px" }}>
+                              <img 
+                                src={member.avatarUrl} 
+                                alt={member.name}
+                                style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover", border: "1px solid rgba(255,255,255,0.08)" }}
+                              />
+                              <span style={{ fontWeight: 600 }}>{member.name}</span>
+                            </td>
+                            <td style={{ padding: "10px", color: "var(--text-muted)" }}>{member.email || "N/A"}</td>
+                            <td style={{ padding: "10px" }}>
+                              <span style={{ color: tierColor, fontWeight: 600 }}>
+                                {member.tier}
+                              </span>
+                            </td>
+                            <td style={{ padding: "10px", fontWeight: "600" }}>
+                              {userRegion === "USA" ? `$${(member.ltv / 83.5).toFixed(2)}` : `₹${member.ltv.toLocaleString("en-IN")}`}
+                            </td>
+                            <td style={{ padding: "10px", color: "var(--text-muted)" }}>{member.count} times</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", color: "var(--text-faint)", padding: "2rem" }}>
+                  No members registered yet.
+                </div>
+              )}
+            </div>
+
+            <button 
+              className="btn-outline" 
+              onClick={() => setShowMembersModal(false)}
+              style={{ alignSelf: "flex-end", padding: "8px 16px", background: "none", cursor: "pointer", border: "1px solid var(--border-strong)", borderRadius: "4px" }}
+            >
+              Close Directory
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

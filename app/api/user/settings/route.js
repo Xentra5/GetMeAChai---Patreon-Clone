@@ -25,6 +25,7 @@ export async function GET() {
       twitterHandle: user.twitterHandle || "",
       githubHandle: user.githubHandle || "",
       avatarUrl: user.avatarUrl || "https://i.pravatar.cc/100?img=11",
+      coverUrl: user.coverUrl || "",
       profileViews: user.profileViews || 0,
       supportToken: user.supportToken || "Chai",
       bronzePrice: user.bronzePrice ?? 100,
@@ -63,6 +64,8 @@ export async function POST(request) {
       payoutNextDate,
       payoutProcessingTime,
       payoutMinimumThreshold,
+      avatarUrl,
+      coverUrl,
     } = await request.json();
 
     // Validate monthlyGoal if provided
@@ -92,6 +95,8 @@ export async function POST(request) {
     if (payoutNextDate !== undefined) updateFields.payoutNextDate = payoutNextDate.trim();
     if (payoutProcessingTime !== undefined) updateFields.payoutProcessingTime = payoutProcessingTime.trim();
     if (payoutMinimumThreshold !== undefined) updateFields.payoutMinimumThreshold = Number(payoutMinimumThreshold);
+    if (avatarUrl !== undefined) updateFields.avatarUrl = avatarUrl.trim();
+    if (coverUrl !== undefined) updateFields.coverUrl = coverUrl.trim();
 
     const user = await User.findOneAndUpdate(
       { email: session.user.email.toLowerCase() },

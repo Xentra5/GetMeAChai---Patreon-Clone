@@ -59,6 +59,33 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
   const [newMessageContent, setNewMessageContent] = useState("");
   const [loadingMessages, setLoadingMessages] = useState(false);
 
+  const uniqueMembers = React.useMemo(() => {
+    const map = new Map();
+    feed.forEach((item) => {
+      const key = (item.from_email || item.name || "Anonymous").toLowerCase();
+      if (!map.has(key)) {
+        map.set(key, {
+          name: item.name,
+          avatarUrl: item.avatarUrl,
+          totalAmount: 0,
+          lastSupported: item.createdAt,
+        });
+      }
+      const member = map.get(key);
+      member.totalAmount += item.amount;
+      if (new Date(item.createdAt) > new Date(member.lastSupported)) {
+        member.lastSupported = item.createdAt;
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => b.totalAmount - a.totalAmount);
+  }, [feed]);
+
+  const getMemberTierBadge = (amountInINR) => {
+    if (amountInINR >= (currentCreator.goldPrice ?? 1000)) return { label: "🥇 Gold Member", color: "var(--platform-brand)" };
+    if (amountInINR >= (currentCreator.silverPrice ?? 500)) return { label: "🥈 Silver Member", color: "var(--platform-success)" };
+    return { label: "🥉 Bronze Member", color: "var(--platform-warning)" };
+  };
+
   const addToast = (message, type = "success") => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
@@ -321,7 +348,14 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
   return (
     <div className="platform-view-section">
       <div className="platform-profile-hero">
-        <div className="platform-cover-photo"></div>
+        <div 
+          className="platform-cover-photo"
+          style={currentCreator.coverUrl ? {
+            backgroundImage: `url(${currentCreator.coverUrl})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          } : undefined}
+        ></div>
         <div className="platform-profile-header-content">
           <img
             src={getAvatarUrl(currentCreator.avatarUrl)}
@@ -603,6 +637,13 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
               💬 Activity ({feed.length})
             </button>
             <button
+              className={`platform-filter-pill ${activeProfileTab === "members" ? "active" : ""}`}
+              onClick={() => setActiveProfileTab("members")}
+              style={{ padding: "6px 16px", fontSize: "0.85rem" }}
+            >
+              👥 Members ({uniqueMembers.length})
+            </button>
+            <button
               className={`platform-filter-pill ${activeProfileTab === "messages" ? "active" : ""}`}
               onClick={() => setActiveProfileTab("messages")}
               style={{ padding: "6px 16px", fontSize: "0.85rem" }}
@@ -737,6 +778,73 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
                     </div>
                   );
                 })
+              )}
+            </div>
+          )}
+
+          {/* Tab Content 4: Members */}
+          {activeProfileTab === "members" && (
+            <div className="platform-card" style={{ padding: "1.5rem" }}>
+              <h3 style={{ fontSize: "1.1rem", marginBottom: "1rem", fontWeight: 600 }}>
+                Current Members ({uniqueMembers.length})
+              </h3>
+              {uniqueMembers.length === 0 ? (
+                <div style={{ color: "var(--platform-text-faint)", fontSize: "0.9rem", padding: "1rem 0" }}>
+                  No members yet. Support this creator to become the first member!
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "1rem" }}>
+                  {uniqueMembers.map((member, index) => {
+                    const badge = getMemberTierBadge(member.totalAmount);
+                    return (
+                      <div 
+                        key={index} 
+                        style={{
+                          background: "var(--platform-bg-surface)",
+                          border: "1px solid var(--platform-border-subtle)",
+                          borderRadius: "var(--platform-radius-md)",
+                          padding: "1rem",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          textAlign: "center",
+                          gap: "8px",
+                          transition: "var(--platform-transition)"
+                        }}
+                      >
+                        <img 
+                          src={member.avatarUrl || "https://i.pravatar.cc/100?img=11"} 
+                          alt={member.name}
+                          style={{
+                            width: "56px",
+                            height: "56px",
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            border: `2px solid ${badge.color}`,
+                            boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
+                          }}
+                        />
+                        <div style={{ fontWeight: 600, fontSize: "0.95rem", color: "var(--platform-text-main)" }}>
+                          {member.name}
+                        </div>
+                        <span style={{ 
+                          fontSize: "0.75rem", 
+                          padding: "3px 8px", 
+                          borderRadius: "12px", 
+                          background: `rgba(255,255,255,0.03)`, 
+                          border: `1px solid ${badge.color}`,
+                          color: badge.color,
+                          fontWeight: 600
+                        }}>
+                          {badge.label}
+                        </span>
+                        <div style={{ fontSize: "0.75rem", color: "var(--platform-text-faint)", marginTop: "4px" }}>
+                          Total Support: {isUSD ? `$${(member.totalAmount / 83.5).toFixed(2)}` : `₹${member.totalAmount.toLocaleString("en-IN")}`}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           )}

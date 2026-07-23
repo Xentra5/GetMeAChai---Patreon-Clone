@@ -165,41 +165,60 @@ export async function GET(request) {
       ];
     }
 
+    const fromEmails = [...new Set(uniqueSupporters.map(s => s.email).filter(Boolean))];
+    const usersList = await User.find({ email: { $in: fromEmails } }, { email: 1, avatarUrl: 1 });
+    const userMap = new Map(usersList.map(u => [u.email.toLowerCase(), u.avatarUrl]));
+
+    const goldVal = user.goldPrice ?? 1000;
+    const silverVal = user.silverPrice ?? 500;
+
+    const allMembersList = uniqueSupporters.map(s => {
+      const avatarUrl = s.email ? userMap.get(s.email.toLowerCase()) : null;
+      let tier = "Bronze Member";
+      if (s.totalAmount >= goldVal) tier = "Gold Member";
+      else if (s.totalAmount >= silverVal) tier = "Silver Member";
+
+      // Initials helper
+      const initials = s.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+
+      return {
+        name: s.name,
+        email: s.email,
+        avatarUrl: avatarUrl || "https://i.pravatar.cc/100?img=11",
+        ltv: s.totalAmount,
+        count: s.count,
+        lastActive: s.lastActive,
+        tier,
+        initials
+      };
+    }).sort((a, b) => b.ltv - a.ltv);
+
     // Top Supporters list (LTV desc)
-    const topSupporters = uniqueSupporters
-      .sort((a, b) => b.totalAmount - a.totalAmount)
-      .slice(0, 5)
-      .map(s => {
-        // Initials for fallback avatar
-        const initials = s.name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-          .toUpperCase()
-          .slice(0, 2);
+    const topSupporters = allMembersList.slice(0, 5).map(m => {
+      // Date helper
+      const minsDiff = Math.floor((new Date() - new Date(m.lastActive)) / 60000);
+      let timeStr = `${minsDiff} mins ago`;
+      if (minsDiff >= 60) {
+        const hrs = Math.floor(minsDiff / 60);
+        timeStr = hrs === 1 ? "1 hr ago" : `${hrs} hrs ago`;
+      }
+      if (minsDiff >= 1440) {
+        const days = Math.floor(minsDiff / 1440);
+        timeStr = days === 1 ? "yesterday" : `${days} days ago`;
+      }
 
-        // Date helper
-        const minsDiff = Math.floor((new Date() - new Date(s.lastActive)) / 60000);
-        let timeStr = `${minsDiff} mins ago`;
-        if (minsDiff >= 60) {
-          const hrs = Math.floor(minsDiff / 60);
-          timeStr = hrs === 1 ? "1 hr ago" : `${hrs} hrs ago`;
-        }
-        if (minsDiff >= 1440) {
-          const days = Math.floor(minsDiff / 1440);
-          timeStr = days === 1 ? "yesterday" : `${days} days ago`;
-        }
-
-        return {
-          name: s.name,
-          ltv: s.totalAmount,
-          count: s.count,
-          lastActiveStr: timeStr,
-          initials,
-          isTopOnePercent: s.totalAmount >= 1000,
-          isMonthlySub: s.count >= 2
-        };
-      });
+      return {
+        ...m,
+        lastActiveStr: timeStr,
+        isTopOnePercent: m.ltv >= 1000,
+        isMonthlySub: m.count >= 2
+      };
+    });
 
     // Traffic sources (Dynamic based on social handles connected)
     let twitterWeight = 20;
@@ -239,6 +258,7 @@ export async function GET(request) {
       avgValuePerSupporter,
       countries,
       topSupporters,
+      allMembers: allMembersList,
       trafficStats,
       aiInsights,
       trends: {

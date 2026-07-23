@@ -15,6 +15,7 @@ export default function SettingsForm({ userRegion }) {
   const [twitterHandle, setTwitterHandle] = useState("");
   const [githubHandle, setGithubHandle] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("https://i.pravatar.cc/100?img=11");
+  const [coverUrl, setCoverUrl] = useState("");
   const [supportToken, setSupportToken] = useState("Chai");
 
   // Custom membership tier prices
@@ -56,6 +57,7 @@ export default function SettingsForm({ userRegion }) {
           setTwitterHandle(data.twitterHandle || "");
           setGithubHandle(data.githubHandle || "");
           setAvatarUrl(data.avatarUrl || "https://i.pravatar.cc/100?img=11");
+          setCoverUrl(data.coverUrl || "");
           setSupportToken(data.supportToken || "Chai");
 
           setBronzePrice(data.bronzePrice ?? 100);
@@ -100,6 +102,8 @@ export default function SettingsForm({ userRegion }) {
           payoutNextDate,
           payoutProcessingTime,
           payoutMinimumThreshold: Number(payoutMinimumThreshold),
+          avatarUrl,
+          coverUrl,
         }),
       });
 
@@ -175,24 +179,61 @@ export default function SettingsForm({ userRegion }) {
                 <div className="platform-fs-header">Profile Information</div>
                 <form onSubmit={handleSave}>
                   <div className="platform-fs-body">
-                    <div className="platform-avatar-upload">
-                      <img
-                        src={getAvatarUrl(avatarUrl)}
-                        className="platform-avatar-preview"
-                        alt="Avatar Preview"
-                      />
-                      <div>
-                        <button
-                          type="button"
-                          className="platform-btn-outline"
-                          style={{ marginBottom: "8px" }}
-                        >
-                          Change Avatar
-                        </button>
-                        <p className="platform-form-hint">
-                          JPG, GIF or PNG. Max size of 2MB.
-                        </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", marginBottom: "1rem" }}>
+                      <div className="platform-avatar-upload">
+                        <img
+                          src={getAvatarUrl(avatarUrl)}
+                          className="platform-avatar-preview"
+                          alt="Avatar Preview"
+                          style={{ border: "2px solid var(--platform-brand)" }}
+                        />
+                        <div>
+                          <label style={{ fontSize: "0.85rem", fontWeight: "600", display: "block", marginBottom: "4px" }}>Profile Picture (PFP)</label>
+                          <p className="platform-form-hint">Supports animated GIFs and standard image URLs</p>
+                        </div>
                       </div>
+
+                      {coverUrl && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+                          <div style={{
+                            width: "120px",
+                            height: "64px",
+                            borderRadius: "var(--platform-radius-sm)",
+                            backgroundImage: `url(${coverUrl})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            border: "1px solid var(--platform-border-strong)"
+                          }} />
+                          <div>
+                            <label style={{ fontSize: "0.85rem", fontWeight: "600", display: "block", marginBottom: "4px" }}>Cover Banner Preview</label>
+                            <p className="platform-form-hint">Custom cover photo/GIF banner active</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="platform-form-group">
+                      <label>Profile Picture (PFP) URL</label>
+                      <input
+                        type="text"
+                        className="platform-form-input"
+                        value={avatarUrl}
+                        onChange={(e) => setAvatarUrl(e.target.value)}
+                        placeholder="Paste direct link to image or GIF..."
+                        style={{ maxWidth: "100%" }}
+                      />
+                    </div>
+
+                    <div className="platform-form-group">
+                      <label>Cover Banner URL</label>
+                      <input
+                        type="text"
+                        className="platform-form-input"
+                        value={coverUrl}
+                        onChange={(e) => setCoverUrl(e.target.value)}
+                        placeholder="Paste direct link to banner image or GIF..."
+                        style={{ maxWidth: "100%" }}
+                      />
                     </div>
 
                     <div className="platform-form-group">

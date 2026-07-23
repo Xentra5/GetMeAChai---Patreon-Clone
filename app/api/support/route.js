@@ -49,31 +49,31 @@ export async function GET(request) {
       status: "success",
     })
       .sort({ createdAt: -1 })
-      .limit(10)
       .lean();
+
+    const fromEmails = [...new Set(payments.map(p => p.from_email).filter(Boolean))];
+    const users = await User.find({ email: { $in: fromEmails } }, { email: 1, avatarUrl: 1 });
+    const userMap = new Map(users.map(u => [u.email.toLowerCase(), u.avatarUrl]));
 
     const isMember = isOwner || userCumulativeAmount >= 100;
 
     const processedPayments = payments.map((pay) => {
+      const supporterAvatar = pay.from_email ? userMap.get(pay.from_email.toLowerCase()) : null;
+      const basePay = {
+        ...pay,
+        avatarUrl: supporterAvatar || "https://i.pravatar.cc/100?img=11",
+      };
       if (isMember) {
-        return pay;
+        return basePay;
       }
       return {
-        _id: pay._id,
+        ...basePay,
         name: "Supporter",
-        amount: pay.amount,
         message: "🔒 Locked. Support this creator to unlock the message feed!",
-        createdAt: pay.createdAt,
-        to_username: pay.to_username,
-        status: pay.status,
       };
     });
 
-    const allPayments = await Payment.find({
-      to_username: creatorSlug,
-      status: "success",
-    });
-    const totalSupportSum = allPayments.reduce((acc, pay) => acc + pay.amount, 0);
+    const totalSupportSum = payments.reduce((acc, pay) => acc + pay.amount, 0);
 
     return NextResponse.json({
       payments: processedPayments,
