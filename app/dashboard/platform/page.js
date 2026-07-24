@@ -20,6 +20,7 @@ import SearchCreators from "../../../Components/Platform/SearchCreators";
 import PublicProfile from "../../../Components/Platform/PublicProfile";
 import SettingsForm from "../../../Components/Platform/SettingsForm";
 import DirectMessagesView from "../../../Components/Platform/DirectMessagesView";
+import Sidebar from "@/Components/Sidebar";
 import "../dashboard.css";
 import "../../platform/platform.css";
 
@@ -86,80 +87,8 @@ function PlatformUnifiedPageInner() {
 
   return (
     <div className="dashboard-body">
-      {/* Sidebar - Reuses the exact styling of the current sidebar */}
-      <aside className="sidebar">
-        <div className="brand">
-          <span>▲</span> GetMeAChai
-        </div>
-        
-        <div className="nav-group">
-          <div className="nav-label">Analytics</div>
-          <button onClick={() => router.push("/dashboard")} className="nav-item w-full text-left bg-transparent border-none cursor-pointer">
-            <span className="flex items-center gap-2">
-              <LayoutDashboard className="w-4 h-4" />
-              Overview
-            </span>
-          </button>
-          <button onClick={() => router.push("/dashboard/payouts")} className="nav-item w-full text-left bg-transparent border-none cursor-pointer">
-            <span className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
-              Revenue & Payouts
-            </span>
-          </button>
-          <button onClick={() => router.push("/dashboard/wallet")} className="nav-item w-full text-left bg-transparent border-none cursor-pointer">
-            <span className="flex items-center gap-2">
-              <Wallet className="w-4 h-4" />
-              My Wallet
-            </span>
-          </button>
-          <button onClick={() => router.push("/dashboard/audience-insights")} className="nav-item w-full text-left bg-transparent border-none cursor-pointer">
-            <span className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Audience Insights
-            </span>
-          </button>
-        </div>
-
-        <div className="nav-group" style={{ marginTop: "1rem" }}>
-          <div className="nav-label">Platform Views</div>
-          <button 
-            onClick={() => handleViewChange("search")} 
-            className={`nav-item w-full text-left bg-transparent border-none cursor-pointer ${activeView === "search" ? "active text-purple-400" : ""}`}
-          >
-            <span className="flex items-center gap-2">
-              <Compass className="w-4 h-4" />
-              Search Creators
-            </span>
-          </button>
-          <button 
-            onClick={() => handleViewChange("profile")} 
-            className={`nav-item w-full text-left bg-transparent border-none cursor-pointer ${activeView === "profile" ? "active text-purple-400" : ""}`}
-          >
-            <span className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              Public Profile
-            </span>
-          </button>
-          <button 
-            onClick={() => handleViewChange("dms")} 
-            className={`nav-item w-full text-left bg-transparent border-none cursor-pointer ${activeView === "dms" ? "active text-purple-400" : ""}`}
-          >
-            <span className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Direct Messages
-            </span>
-          </button>
-          <button 
-            onClick={() => handleViewChange("settings")} 
-            className={`nav-item w-full text-left bg-transparent border-none cursor-pointer ${activeView === "settings" ? "active text-purple-400" : ""}`}
-          >
-            <span className="flex items-center gap-2">
-              <SettingsIcon className="w-4 h-4" />
-              Settings
-            </span>
-          </button>
-        </div>
-      </aside>
+      {/* Sidebar */}
+      <Sidebar activeTab="platform" activeSubView={activeView} />
 
       {/* Main Content Area */}
       <div className="main-wrapper">

@@ -22,6 +22,7 @@ import {
   MapPin,
   MessageSquare
 } from "lucide-react";
+import Sidebar from "@/Components/Sidebar";
 import "./dashboard.css";
 
 // Register Chart.js modules
@@ -103,6 +104,27 @@ export default function Dashboard() {
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
+    }
+  }, [status, router]);
+
+  // Redirect students to /dashboard/wallet
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedRole = localStorage.getItem("userAccountType");
+      if (storedRole && storedRole.toLowerCase() === "student") {
+        router.replace("/dashboard/wallet");
+        return;
+      }
+    }
+    if (status === "authenticated") {
+      fetch("/api/user/settings")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.role && data.role.toLowerCase() === "student") {
+            router.replace("/dashboard/wallet");
+          }
+        })
+        .catch(() => {});
     }
   }, [status, router]);
 
@@ -333,65 +355,7 @@ export default function Dashboard() {
   return (
     <div className="dashboard-body">
       {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="brand">
-          <span>▲</span> GetMeAChai
-        </div>
-        <div className="nav-group">
-          <div className="nav-label">Analytics</div>
-          <Link href="/dashboard" className="nav-item active">
-            <span className="flex items-center gap-2">
-              <LayoutDashboard className="w-4 h-4 text-purple-400" />
-              Overview
-            </span>
-          </Link>
-          <Link href="/dashboard/payouts" className="nav-item">
-            <span className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
-              Revenue & Payouts
-            </span>
-          </Link>
-          <Link href="/dashboard/wallet" className="nav-item">
-            <span className="flex items-center gap-2">
-              <Wallet className="w-4 h-4" />
-              My Wallet
-            </span>
-          </Link>
-          <Link href="/dashboard/audience-insights" className="nav-item">
-            <span className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Audience Insights
-            </span>
-          </Link>
-        </div>
-        <div className="nav-group">
-          <div className="nav-label">Platform Views</div>
-          <Link href="/dashboard/platform?view=search" className="nav-item">
-            <span className="flex items-center gap-2">
-              <Compass className="w-4 h-4" />
-              Search Creators
-            </span>
-          </Link>
-          <Link href="/dashboard/platform?view=profile" className="nav-item">
-            <span className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              Public Profile
-            </span>
-          </Link>
-          <Link href="/dashboard/platform?view=dms" className="nav-item">
-            <span className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Direct Messages
-            </span>
-          </Link>
-          <Link href="/dashboard/platform?view=settings" className="nav-item">
-            <span className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              Settings
-            </span>
-          </Link>
-        </div>
-      </aside>
+      <Sidebar activeTab="overview" />
 
       {/* Main Content Area */}
       <div className="main-wrapper">

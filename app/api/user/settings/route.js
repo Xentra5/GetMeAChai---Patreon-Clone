@@ -20,6 +20,7 @@ export async function GET() {
     return NextResponse.json({
       name: user.name || "",
       email: user.email,
+      role: user.role || "student",
       monthlyGoal: user.monthlyGoal,
       category: user.category || "Engineering",
       twitterHandle: user.twitterHandle || "",

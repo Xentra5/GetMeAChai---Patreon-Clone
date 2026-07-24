@@ -24,10 +24,10 @@ import {
   CheckCircle,
   Building2,
   Lock,
-  Globe,
   MapPin,
   MessageSquare
 } from "lucide-react";
+import Sidebar from "@/Components/Sidebar";
 import "../dashboard.css";
 
 export default function WalletPage() {
@@ -675,65 +675,7 @@ export default function WalletPage() {
       `}} />
 
       {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="brand">
-          <span style={{ color: "var(--brand)" }}>▲</span> GetMeAChai
-        </div>
-        <div className="nav-group">
-          <div className="nav-label">Analytics</div>
-          <Link href="/dashboard" className="nav-item">
-            <span className="flex items-center gap-2">
-              <LayoutDashboard className="w-4 h-4" />
-              Overview
-            </span>
-          </Link>
-          <Link href="/dashboard/payouts" className="nav-item">
-            <span className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
-              Revenue & Payouts
-            </span>
-          </Link>
-          <Link href="/dashboard/wallet" className="nav-item active">
-            <span className="flex items-center gap-2">
-              <Wallet className="w-4 h-4 text-cyan-400" />
-              My Wallet
-            </span>
-          </Link>
-          <Link href="/dashboard/audience-insights" className="nav-item">
-            <span className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Audience Insights
-            </span>
-          </Link>
-        </div>
-        <div className="nav-group">
-          <div className="nav-label">Platform Views</div>
-          <Link href="/dashboard/platform?view=search" className="nav-item">
-            <span className="flex items-center gap-2">
-              <Compass className="w-4 h-4" />
-              Search Creators
-            </span>
-          </Link>
-          <Link href="/dashboard/platform?view=profile" className="nav-item">
-            <span className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              Public Profile
-            </span>
-          </Link>
-          <Link href="/dashboard/platform?view=dms" className="nav-item">
-            <span className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Direct Messages
-            </span>
-          </Link>
-          <Link href="/dashboard/platform?view=settings" className="nav-item">
-            <span className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              Settings
-            </span>
-          </Link>
-        </div>
-      </aside>
+      <Sidebar activeTab="wallet" />
 
       {/* Main Content */}
       <div className="main-wrapper">
