@@ -11,8 +11,8 @@ export async function GET(request) {
 
     await connectDB();
     
-    // Build query filters
-    const queryObj = { role: "creator" };
+    // Build query filters (Only onboarded & verified creators are listed)
+    const queryObj = { role: "creator", isCreatorVerified: true };
 
     if (q && q.trim()) {
       const searchRegex = { $regex: q.trim(), $options: "i" };

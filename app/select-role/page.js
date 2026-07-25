@@ -7,7 +7,12 @@ export default function SelectRolePage() {
   const [selectedRole, setSelectedRole] = useState("");
   const [statusMessage, setStatusMessage] = useState("Please select a role.");
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState(null);
   const router = useRouter();
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+  };
 
   const handleRoleSelection = (role) => {
     setSelectedRole(role);
@@ -20,10 +25,10 @@ export default function SelectRolePage() {
 
     setLoading(true);
     try {
-      // Store in localStorage as requested in original HTML
+      // Store in localStorage
       localStorage.setItem("userAccountType", selectedRole);
 
-      // Call API endpoint to update database (standard route we will create if needed)
+      // Call API endpoint to update database
       const response = await fetch("/api/user/role", {
         method: "POST",
         headers: {
@@ -33,31 +38,35 @@ export default function SelectRolePage() {
       });
 
       if (response.ok) {
-        alert(`Account type "${selectedRole}" saved successfully! Moving to the next step...`);
-        if (selectedRole === "Student") {
-          router.push("/student/welcome");
-        } else {
-          router.push("/creator-onboarding"); // Creators redirect to creator onboarding page
-        }
+        showToast(`Account type "${selectedRole}" saved successfully! Moving to next step...`, "success");
+        setTimeout(() => {
+          if (selectedRole === "Student") {
+            router.push("/student/welcome");
+          } else {
+            router.push("/creator-onboarding");
+          }
+        }, 1200);
       } else {
-        // Fallback if API doesn't exist yet or fails
         console.warn("API returned error or is not configured yet, saved to local storage.");
-        alert(`Saved ${selectedRole} to local storage. Moving to the next step...`);
+        showToast(`Saved ${selectedRole} account type! Redirecting...`, "success");
+        setTimeout(() => {
+          if (selectedRole === "Student") {
+            router.push("/student/welcome");
+          } else {
+            router.push("/creator-onboarding");
+          }
+        }, 1200);
+      }
+    } catch (error) {
+      console.error("Error saving role:", error);
+      showToast(`Saved ${selectedRole} account type! Redirecting...`, "success");
+      setTimeout(() => {
         if (selectedRole === "Student") {
           router.push("/student/welcome");
         } else {
           router.push("/creator-onboarding");
         }
-      }
-    } catch (error) {
-      console.error("Error saving role:", error);
-      // Fallback
-      alert(`Saved ${selectedRole} to local storage. Moving to the next step...`);
-      if (selectedRole === "Student") {
-        router.push("/student/welcome");
-      } else {
-        router.push("/creator-onboarding");
-      }
+      }, 1200);
     } finally {
       setLoading(false);
     }
@@ -155,6 +164,18 @@ export default function SelectRolePage() {
           </div>
         </form>
       </main>
+
+      {/* Floating Toast Notification Banner */}
+      {toast && (
+        <div className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-xl border flex items-center gap-3 shadow-2xl backdrop-blur-md transition-all duration-300 animate-pulse ${
+          toast.type === "error" 
+            ? "bg-red-950/90 border-red-500/50 text-red-200" 
+            : "bg-emerald-950/90 border-emerald-500/50 text-emerald-200"
+        }`}>
+          <span className="text-xl">{toast.type === "error" ? "⚠️" : "✓"}</span>
+          <span className="font-semibold text-sm tracking-wide">{toast.message}</span>
+        </div>
+      )}
     </div>
   );
 }

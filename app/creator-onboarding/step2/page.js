@@ -42,24 +42,52 @@ export default function Step2() {
         }
     };
 
+    const handleTwitterClick = () => {
+        if (formData.socialTwitterConnected) {
+            handleInputChange("socialTwitterConnected", false);
+            handleInputChange("twitterHandle", "");
+        } else {
+            const handle = prompt("Enter your Twitter / X handle:", formData.twitterHandle || "");
+            if (handle !== null) {
+                handleInputChange("socialTwitterConnected", true);
+                handleInputChange("twitterHandle", handle.replace('@', '').trim());
+            }
+        }
+    };
+
+    const handleGithubClick = () => {
+        if (formData.socialGithubConnected) {
+            handleInputChange("socialGithubConnected", false);
+            handleInputChange("githubHandle", "");
+        } else {
+            const handle = prompt("Enter your GitHub username:", formData.githubHandle || "");
+            if (handle !== null) {
+                handleInputChange("socialGithubConnected", true);
+                handleInputChange("githubHandle", handle.replace('@', '').trim());
+            }
+        }
+    };
+
     return (
         <div className="form-step">
             <div className="form-group">
-                <label>Link Social Account (Proof of Audience)</label>
-                <button 
-                    className="social-btn" 
-                    type="button"
-                    onClick={() => handleInputChange("socialTwitterConnected", !formData.socialTwitterConnected)}
-                >
-                    {formData.socialTwitterConnected ? "✓ Twitter / X Connected" : "🔗 Connect Twitter / X"}
-                </button>
-                <button 
-                    className="social-btn" 
-                    type="button"
-                    onClick={() => handleInputChange("socialGithubConnected", !formData.socialGithubConnected)}
-                >
-                    {formData.socialGithubConnected ? "✓ GitHub Connected" : "🔗 Connect GitHub"}
-                </button>
+                <label>Link Social Account or Upload Government ID <span style={{ color: "var(--accent-primary, #e11d48)" }}>*</span></label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <button 
+                        className="social-btn" 
+                        type="button"
+                        onClick={handleTwitterClick}
+                    >
+                        {formData.socialTwitterConnected ? `✓ Twitter / X (@${formData.twitterHandle}) Connected` : "🔗 Connect Twitter / X"}
+                    </button>
+                    <button 
+                        className="social-btn" 
+                        type="button"
+                        onClick={handleGithubClick}
+                    >
+                        {formData.socialGithubConnected ? `✓ GitHub (@${formData.githubHandle}) Connected` : "🔗 Connect GitHub"}
+                    </button>
+                </div>
             </div>
 
             <div className="form-group" style={{ marginTop: '2rem' }}>

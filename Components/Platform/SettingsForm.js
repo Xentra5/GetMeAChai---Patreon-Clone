@@ -352,7 +352,31 @@ export default function SettingsForm({ userRegion }) {
                     <button
                       type="button"
                       className="platform-btn-outline"
-                      style={{ color: "var(--platform-text-muted)" }}
+                      style={{ color: twitterHandle ? "#e11d48" : "var(--platform-brand)" }}
+                      onClick={async () => {
+                        let newTwitter = "";
+                        if (twitterHandle) {
+                          newTwitter = "";
+                          setTwitterHandle("");
+                        } else {
+                          const input = prompt("Enter your Twitter / X handle:");
+                          if (input === null) return;
+                          newTwitter = input.replace('@', '').trim();
+                          setTwitterHandle(newTwitter);
+                        }
+                        try {
+                          const res = await fetch("/api/user/settings", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ twitterHandle: newTwitter })
+                          });
+                          if (res.ok) {
+                            addToast(newTwitter ? "Twitter account connected!" : "Twitter account disconnected.");
+                          }
+                        } catch (err) {
+                          console.error("Error saving twitter handle:", err);
+                        }
+                      }}
                     >
                       {twitterHandle ? "Disconnect" : "Connect"}
                     </button>
@@ -362,6 +386,7 @@ export default function SettingsForm({ userRegion }) {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
+                      paddingTop: "1rem",
                     }}
                   >
                     <div>
@@ -378,7 +403,35 @@ export default function SettingsForm({ userRegion }) {
                         {githubHandle ? `@${githubHandle.replace('@', '')}` : "Connect your repositories"}
                       </div>
                     </div>
-                    <button type="button" className="platform-btn-outline">
+                    <button 
+                      type="button" 
+                      className="platform-btn-outline"
+                      style={{ color: githubHandle ? "#e11d48" : "var(--platform-brand)" }}
+                      onClick={async () => {
+                        let newGithub = "";
+                        if (githubHandle) {
+                          newGithub = "";
+                          setGithubHandle("");
+                        } else {
+                          const input = prompt("Enter your GitHub username:");
+                          if (input === null) return;
+                          newGithub = input.replace('@', '').trim();
+                          setGithubHandle(newGithub);
+                        }
+                        try {
+                          const res = await fetch("/api/user/settings", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ githubHandle: newGithub })
+                          });
+                          if (res.ok) {
+                            addToast(newGithub ? "GitHub account connected!" : "GitHub account disconnected.");
+                          }
+                        } catch (err) {
+                          console.error("Error saving github handle:", err);
+                        }
+                      }}
+                    >
                       {githubHandle ? "Disconnect" : "Connect"}
                     </button>
                   </div>

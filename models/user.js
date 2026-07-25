@@ -87,6 +87,38 @@ const UserSchema = new mongoose.Schema(
             type: Number,
             default: 1000,
         },
+        dob: {
+            type: String,
+            default: "",
+        },
+        phone: {
+            type: String,
+            default: "",
+        },
+        idDocumentName: {
+            type: String,
+            default: "",
+        },
+        payoutMethod: {
+            type: String,
+            default: "stripe",
+        },
+        payoutDetails: {
+            type: String,
+            default: "",
+        },
+        agreedTerms: {
+            type: Boolean,
+            default: false,
+        },
+        onboardingCompleted: {
+            type: Boolean,
+            default: false,
+        },
+        isCreatorVerified: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true } // Automatically creates createdAt and updatedAt fields
 );

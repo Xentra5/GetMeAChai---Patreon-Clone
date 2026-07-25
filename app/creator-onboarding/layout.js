@@ -42,9 +42,71 @@ export default function OnboardingLayout({ children }) {
     // Calculate percentage based on current step
     const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
 
-    const handleContinue = (e) => {
-        if (currentStep < totalSteps) {
-            e.preventDefault();
+    const [submitting, setSubmitting] = useState(false);
+    const [validationError, setValidationError] = useState("");
+
+    const validateCurrentStep = () => {
+        setValidationError("");
+        if (currentStep === 1) {
+            if (!formData.fullName || !formData.fullName.trim()) {
+                setValidationError("Legal Full Name is mandatory.");
+                return false;
+            }
+            if (!formData.dob || !formData.dob.trim()) {
+                setValidationError("Date of Birth is mandatory.");
+                return false;
+            }
+            if (!formData.phone || !formData.phone.trim()) {
+                setValidationError("Phone Verification number is mandatory.");
+                return false;
+            }
+        } else if (currentStep === 2) {
+            if (!formData.socialTwitterConnected && !formData.socialGithubConnected && !formData.fileAttached) {
+                setValidationError("Mandatory: Please link Twitter/GitHub account or upload Government ID.");
+                return false;
+            }
+        } else if (currentStep === 3) {
+            if (!formData.payoutDetails || !formData.payoutDetails.trim()) {
+                setValidationError("Payout Account Details are mandatory.");
+                return false;
+            }
+            if (!formData.agreedTerms) {
+                setValidationError("You must agree to the Creator Terms of Service to proceed.");
+                return false;
+            }
+        }
+        return true;
+    };
+
+    const handleContinue = async (e) => {
+        e.preventDefault();
+        
+        if (!validateCurrentStep()) {
+            return;
+        }
+
+        if (currentStep === 3) {
+            // Submit onboarding data to API
+            setSubmitting(true);
+            try {
+                const response = await fetch('/api/creator-onboarding', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const resData = await response.json();
+                if (response.ok) {
+                    router.push('/creator-onboarding/step4');
+                } else {
+                    setValidationError(resData.error || "Failed to submit onboarding data.");
+                }
+            } catch (err) {
+                console.error("Submission error:", err);
+                setValidationError("Network error submitting onboarding. Please try again.");
+            } finally {
+                setSubmitting(false);
+            }
+        } else if (currentStep < totalSteps) {
             router.push(`/creator-onboarding/step${currentStep + 1}`);
         }
     };
@@ -78,6 +140,22 @@ export default function OnboardingLayout({ children }) {
                         </div>
                     )}
 
+                    {/* Validation error display */}
+                    {validationError && (
+                        <div style={{
+                            background: "rgba(225, 29, 72, 0.15)",
+                            border: "1px solid #e11d48",
+                            color: "#fda4af",
+                            padding: "10px 14px",
+                            borderRadius: "8px",
+                            marginBottom: "15px",
+                            fontSize: "0.85rem",
+                            textAlign: "center"
+                        }}>
+                            ⚠ {validationError}
+                        </div>
+                    )}
+
                     {/* Individual page form contents */}
                     {children}
 
@@ -88,6 +166,7 @@ export default function OnboardingLayout({ children }) {
                                 <Link 
                                     href={`/creator-onboarding/step${currentStep - 1}`} 
                                     className="btn btn-prev"
+                                    onClick={() => setValidationError("")}
                                 >
                                     Back
                                 </Link>
@@ -95,13 +174,14 @@ export default function OnboardingLayout({ children }) {
                                 <span className="btn btn-prev" style={{ visibility: 'hidden' }}>Back</span>
                             )}
 
-                            <Link 
-                                href={`/creator-onboarding/step${currentStep + 1}`}
+                            <button
+                                type="button"
                                 onClick={handleContinue}
+                                disabled={submitting}
                                 className="btn btn-next"
                             >
-                                {currentStep === 3 ? 'Securely Submit' : 'Continue'}
-                            </Link>
+                                {submitting ? "Submitting..." : currentStep === 3 ? 'Securely Submit' : 'Continue'}
+                            </button>
                         </div>
                     )}
                 </div>

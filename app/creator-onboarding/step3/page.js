@@ -16,7 +16,7 @@ export default function Step3() {
     return (
         <div className="form-step">
             <div className="form-group">
-                <label>Payout Method</label>
+                <label>Payout Method <span style={{ color: "var(--accent-primary, #e11d48)" }}>*</span></label>
                 <select 
                     value={formData.payoutMethod || "stripe"}
                     onChange={(e) => handleInputChange("payoutMethod", e.target.value)}
@@ -27,7 +27,7 @@ export default function Step3() {
                 </select>
             </div>
             <div className="form-group">
-                <label>Account Details</label>
+                <label>Account Details <span style={{ color: "var(--accent-primary, #e11d48)" }}>*</span></label>
                 <input 
                     type="text" 
                     placeholder="Enter email or wallet address" 
