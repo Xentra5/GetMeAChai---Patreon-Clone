@@ -16,7 +16,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata = {
-  title: "patrion",
+  title: "GetMeAChai - Support Creators with Chai",
   description: "A platform for creators to connect with their fans and monetize their content.",
 };
 

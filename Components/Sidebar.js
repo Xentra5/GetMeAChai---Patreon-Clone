@@ -52,11 +52,24 @@ export default function Sidebar({ activeTab, activeSubView }) {
   return (
     <aside className="sidebar select-none">
       <div className="brand">
-        <span style={{ color: "var(--brand, #a855f7)" }}>▲</span> GetMeAChai
+        <span style={{ color: "var(--brand, #a855f7)" }}>☕</span> GetMeAChai
       </div>
 
       <div className="nav-group">
         <div className="nav-label">{isStudent ? "My Account" : "Analytics"}</div>
+
+        {/* Student-only: Student Dashboard */}
+        {isStudent && (
+          <Link
+            href="/dashboard/student"
+            className={`nav-item ${activeTab === "student" ? "active" : ""}`}
+          >
+            <span className="flex items-center gap-2">
+              <LayoutDashboard className="w-4 h-4 text-amber-400" />
+              Student Dashboard
+            </span>
+          </Link>
+        )}
 
         {/* Creator-only: Overview */}
         {!isStudent && (
@@ -120,15 +133,17 @@ export default function Sidebar({ activeTab, activeSubView }) {
             Search Creators
           </span>
         </Link>
-        <Link
-          href="/dashboard/platform?view=profile"
-          className={`nav-item ${activeTab === "platform" && activeSubView === "profile" ? "active" : ""}`}
-        >
-          <span className="flex items-center gap-2">
-            <User className="w-4 h-4" />
-            Public Profile
-          </span>
-        </Link>
+        {!isStudent && (
+          <Link
+            href="/dashboard/platform?view=profile"
+            className={`nav-item ${activeTab === "platform" && activeSubView === "profile" ? "active" : ""}`}
+          >
+            <span className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Public Profile
+            </span>
+          </Link>
+        )}
         <Link
           href="/dashboard/platform?view=dms"
           className={`nav-item ${activeTab === "platform" && activeSubView === "dms" ? "active" : ""}`}

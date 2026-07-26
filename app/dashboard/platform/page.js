@@ -20,6 +20,7 @@ import SearchCreators from "../../../Components/Platform/SearchCreators";
 import PublicProfile from "../../../Components/Platform/PublicProfile";
 import SettingsForm from "../../../Components/Platform/SettingsForm";
 import DirectMessagesView from "../../../Components/Platform/DirectMessagesView";
+import SupportedCreatorsView from "../../../Components/Platform/SupportedCreatorsView";
 import Sidebar from "@/Components/Sidebar";
 import "../dashboard.css";
 import "../../platform/platform.css";
@@ -31,26 +32,27 @@ function PlatformUnifiedPageInner() {
 
   // Region & Localisation State: "USA" (USD) or "IND" (INR)
   const [userRegion, setUserRegion] = useState("USA");
+  const [userRole, setUserRole] = useState("creator");
 
-  // Load region from localStorage on mount
+  // Load region + role from localStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("userRegion");
-      if (saved) {
-        setUserRegion(saved);
-      }
+      if (saved) setUserRegion(saved);
+      const storedRole = localStorage.getItem("userAccountType");
+      if (storedRole && storedRole.toLowerCase() === "student") setUserRole("student");
     }
   }, []);
 
   // SPA View Switcher
-  const [activeView, setActiveView] = useState("search"); // 'search' | 'profile' | 'settings'
+  const [activeView, setActiveView] = useState("search"); // 'search' | 'profile' | 'settings' | 'dms' | 'subscriptions'
   const [selectedCreator, setSelectedCreator] = useState(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   // Sync active view with the URL search parameter
   const viewParam = searchParams.get("view");
   useEffect(() => {
-    if (viewParam && ["search", "profile", "settings"].includes(viewParam)) {
+    if (viewParam && ["search", "profile", "settings", "dms", "subscriptions"].includes(viewParam)) {
       setActiveView(viewParam);
     }
   }, [viewParam]);
@@ -183,10 +185,13 @@ function PlatformUnifiedPageInner() {
             <PublicProfile creator={selectedCreator} userRegion={userRegion} />
           )}
           {activeView === "settings" && (
-            <SettingsForm userRegion={userRegion} />
+            <SettingsForm userRegion={userRegion} userRole={userRole} />
           )}
           {activeView === "dms" && (
             <DirectMessagesView userRegion={userRegion} />
+          )}
+          {activeView === "subscriptions" && (
+            <SupportedCreatorsView onSelectProfile={handleSelectCreator} />
           )}
         </main>
       </div>

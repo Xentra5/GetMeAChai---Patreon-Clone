@@ -107,12 +107,12 @@ export default function Dashboard() {
     }
   }, [status, router]);
 
-  // Redirect students to /dashboard/wallet
+  // Redirect students to /dashboard/student
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedRole = localStorage.getItem("userAccountType");
       if (storedRole && storedRole.toLowerCase() === "student") {
-        router.replace("/dashboard/wallet");
+        router.replace("/dashboard/student");
         return;
       }
     }
@@ -121,7 +121,7 @@ export default function Dashboard() {
         .then((res) => res.json())
         .then((data) => {
           if (data.role && data.role.toLowerCase() === "student") {
-            router.replace("/dashboard/wallet");
+            router.replace("/dashboard/student");
           }
         })
         .catch(() => {});
@@ -665,13 +665,12 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="card-footer flex justify-between items-center w-full">
-                <Link href="#" className="flex items-center gap-1 text-zinc-400 hover:text-white">
+                <Link href="/dashboard/audience-insights" className="flex items-center gap-1 text-zinc-400 hover:text-white">
                   View Demographics <ChevronRight className="w-4 h-4" />
                 </Link>
                 <button
                   onClick={() => {
-                    setNewGoal(String(stats.monthlyGoal ?? ""));
-                    setIsSettingsOpen(true);
+                    router.push("/dashboard/platform?view=settings");
                   }}
                   className="text-purple-400 hover:text-purple-300 text-xs font-semibold bg-transparent border-none cursor-pointer p-0"
                 >

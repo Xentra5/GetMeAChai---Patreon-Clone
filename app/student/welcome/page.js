@@ -97,7 +97,7 @@ export default function WelcomeTransition() {
           </p>
 
           <button
-            onClick={() => router.push("/dashboard/wallet")}
+            onClick={() => router.push("/dashboard/student")}
             id="hero-btn"
             className={`btn cursor-pointer border-none outline-none ${animateBtn ? "animate-in" : ""}`}
           >

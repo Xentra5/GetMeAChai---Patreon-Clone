@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import "../../app/platform/platform.css";
 
-export default function SettingsForm({ userRegion }) {
+export default function SettingsForm({ userRegion, userRole }) {
+  const isStudent = userRole === "student";
   const [activeTab, setActiveTab] = useState("General");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -128,7 +129,8 @@ export default function SettingsForm({ userRegion }) {
     return url;
   };
 
-  const tabs = ["General", "Public Profile", "Payouts", "Security"];
+  const allTabs = ["General", "Public Profile", "Payouts", "Security"];
+  const tabs = isStudent ? allTabs.filter(t => t !== "Public Profile" && t !== "Payouts") : allTabs;
 
   if (loading) {
     return (

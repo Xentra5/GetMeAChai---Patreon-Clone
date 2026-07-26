@@ -14,7 +14,7 @@ export default function Step4() {
                     Expected completion: 1 to 24 hours.
                 </p>
                 <div style={{ marginTop: '30px' }}>
-                    <Link href="/student/welcome" className="btn btn-next">
+                    <Link href="/dashboard" className="btn btn-next">
                         Go to Dashboard
                     </Link>
                 </div>
