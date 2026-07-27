@@ -11,6 +11,7 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 * **Glassmorphic Navigation Bar (`Components/NavBar.js`):** Built a responsive sticky navbar with backdrop blur (`backdrop-blur-md`), clean navigation links (Home, About, Contact), and stateful buttons for user sessions (Signup, Login, Dashboard, Role Selection).
 * **Styled Footer (`Components/Footer.js`):** Minimal, cohesive footer displaying copyright and branding info with gradient backgrounds.
 * **Session Wrapper (`Components/SesssionWrapper.js`):** Encapsulates NextAuth's `SessionProvider` to enable application-wide session management.
+* **Dynamic Navigation Sidebar (`Components/Sidebar.js`):** A shared, highly interactive sidebar navigation component that dynamically adjusts links, headers, and navigation contexts based on whether the logged-in user is viewing in **Creator** or **Student** mode.
 
 ### 2. High-Converting Landing Page with Live Statistics (`app/page.js`)
 * **Hero Section:** Features smooth fade-in animations and text highlighting the platform's mission.
@@ -46,10 +47,13 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 * **Role Database Persistence:** Integrates with the `/api/user/role` backend endpoint to persist the user's selected role directly to their MongoDB user document.
 * **Stateful Flow:** Features client-side persistence (`localStorage`) alongside the database update to manage user redirection flows.
 
-### 6. Student Welcome Transition & Layout (`app/student/...`)
+### 6. Student Welcome Transition & Dashboard Layout (`app/student/...` & `app/dashboard/student/...`)
 * **Dedicated Sub-Layout (`app/student/layout.js`):** A custom layout that overrides the global navbar and footer, offering a clean, full-screen interactive space.
 * **Premium Welcome Overlay (`app/student/welcome/page.js`):** Displays a personalized greeting for the logged-in student user, which automatically slides up after a few seconds using custom CSS animations.
 * **Staggered Dashboard Animation (`app/student/welcome/WelcomeTransition.css`):** Features beautifully timed, staggered entrance animations for the dashboard header, summary text, and the primary "Get Started" call-to-action button.
+* **Dynamic Student Dashboard (`app/dashboard/student/page.js`):** Features a control center for students, supporting:
+  * **Explore Feed (`app/api/posts/explore/route.js`):** A unified feed of all creator updates. Includes live search, category filtering ribbons, layout toggle options (grid/list layouts), and interactive gated lock screens to support creators.
+  * **Supported Creators Hub (`Components/Platform/SupportedCreatorsView.js`):** Displays active backing statistics (total chais bought, total amount contributed in INR, last supported date) with quick-navigation to public creator profile pages.
 
 ### 7. Multi-Step Creator Onboarding Flow (`app/creator-onboarding/...`)
 * **Shared Context State Onboarding Layout (`app/creator-onboarding/layout.js`):** Implements a customized onboarding layout utilizing React Context (`OnboardingContext`) to manage unified form state dynamically across all steps.
@@ -58,6 +62,7 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 * **Step 2 - Social Proof & ID Verification (`app/creator-onboarding/step2/page.js`):** Enables single-click toggles to mock connecting Twitter/X and GitHub accounts, alongside a drag-and-drop file upload area to upload Passport or Driver's License credentials.
 * **Step 3 - Payout Selection & Terms (`app/creator-onboarding/step3/page.js`):** Configures options for Payout Methods (Stripe, PayPal, USDC Crypto Wallet), stores account details, and handles compliance checks and terms agreements.
 * **Step 4 - Onboarding Success & Compliance Review (`app/creator-onboarding/step4/page.js`):** Serves as the completion confirmation page, letting creators know their application is encrypted and currently undergoing compliance review.
+* **Onboarding Database Persistence (`app/api/creator-onboarding/route.js`):** Persists all four steps of the creator onboarding workflow directly to the MongoDB user document (storing legal name, phone, DOB, mock document upload path, payout selections, and verification states).
 
 ### 8. Unified Creator Dashboard System (`app/dashboard/...`)
 * **Core Dashboard Page (`app/dashboard/page.js`):**
@@ -68,6 +73,7 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
   * Provides granular support analytics: total supporters count, support value distribution brackets, and conversion rates.
   * Features a **Top Supporters Leaderboard** showing active backers.
   * Integrates with the backend stats API to dynamically fetch audience metadata.
+  * **Tiered Membership Pricing & Members Directory:** Supports configuration of tiered subscription models and provides an interactive **Members Directory Modal** allowing creators to search, sort, and detail active supporting member records.
 * **Payouts Dashboard (`app/dashboard/payouts/page.js`):**
   * Displays financial indicators: **Available Balance**, **Pending Clearance**, and **Total Withdrawn**.
   * Contains a **Withdrawal Request Modal** allowing creators to instantly request payouts to their configured methods (Stripe, PayPal, Crypto).
@@ -160,3 +166,25 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the live application.
+
+---
+
+## 🐳 Docker Deployment
+
+You can build and run the application in a Docker container using the provided `Dockerfile` and `docker-compose.yml` config.
+
+### 1. Build and Run with Docker Compose
+To spin up both the Next.js application and a MongoDB database container simultaneously:
+
+```bash
+docker compose up --build
+```
+
+### 2. Standalone Docker Build
+To build only the Next.js container (e.g., for production deployment clouds):
+
+```bash
+docker build -t getchai-app .
+docker run -p 3000:3000 --env-file .env.local getchai-app
+```
+
