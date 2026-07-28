@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { signOut } from "next-auth/react";
 import "../../app/platform/platform.css";
 
 export default function SettingsForm({ userRegion, userRole }) {
@@ -12,6 +13,9 @@ export default function SettingsForm({ userRegion, userRole }) {
   // Form states
   const [displayName, setDisplayName] = useState("");
   const [monthlyGoal, setMonthlyGoal] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [updatingPassword, setUpdatingPassword] = useState(false);
   const [category, setCategory] = useState("Engineering");
   const [twitterHandle, setTwitterHandle] = useState("");
   const [githubHandle, setGithubHandle] = useState("");
@@ -122,6 +126,39 @@ export default function SettingsForm({ userRegion, userRole }) {
     }
   };
 
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword) {
+      addToast("Please fill in both password fields.", "error");
+      return;
+    }
+    if (newPassword.length < 8) {
+      addToast("New password must be at least 8 characters long.", "error");
+      return;
+    }
+    setUpdatingPassword(true);
+    try {
+      const response = await fetch("/api/user/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      if (response.ok) {
+        addToast("Password updated successfully!");
+        setCurrentPassword("");
+        setNewPassword("");
+      } else {
+        const data = await response.json();
+        addToast(data.error || "Failed to update password.", "error");
+      }
+    } catch (error) {
+      console.error("Password update error:", error);
+      addToast("Connection error. Please try again.", "error");
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
   const getAvatarUrl = (url) => {
     if (!url || url.includes("img=11")) {
       return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23a855f7"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>`;
@@ -171,6 +208,29 @@ export default function SettingsForm({ userRegion, userRole }) {
               {tab}
             </div>
           ))}
+          <div style={{ marginTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "1rem" }}>
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="platform-set-nav-item"
+              style={{
+                color: "#f43f5e",
+                width: "100%",
+                textAlign: "left",
+                background: "transparent",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "10px 14px"
+              }}
+            >
+              <svg style={{ width: "16px", height: "16px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Sign Out
+            </button>
+          </div>
         </div>
 
         {/* Settings Form Content */}
@@ -439,6 +499,27 @@ export default function SettingsForm({ userRegion, userRole }) {
                   </div>
                 </div>
               </div>
+
+              <div className="platform-form-section" style={{ border: "1px solid rgba(244, 63, 94, 0.2)" }}>
+                <div className="platform-fs-header" style={{ color: "#f43f5e" }}>Account Session</div>
+                <div className="platform-fs-body">
+                  <p className="platform-form-hint" style={{ marginBottom: "1.2rem" }}>
+                    Sign out of your account on this device.
+                  </p>
+                  <button
+                    type="button"
+                    className="platform-btn-outline"
+                    style={{
+                      color: "#f43f5e",
+                      borderColor: "rgba(244, 63, 94, 0.3)",
+                      background: "rgba(244, 63, 94, 0.05)"
+                    }}
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
             </>
           )}
 
@@ -580,24 +661,40 @@ export default function SettingsForm({ userRegion, userRole }) {
           {activeTab === "Security" && (
             <div className="platform-form-section">
               <div className="platform-fs-header">Account Security</div>
-              <div className="platform-fs-body">
-                <p style={{ color: "var(--platform-text-muted)", fontSize: "0.9rem" }}>
-                  To maintain the security of your account, you can update your password below.
-                </p>
-                <div className="platform-form-group" style={{ marginTop: "1rem" }}>
-                  <label>Current Password</label>
-                  <input type="password" className="platform-form-input" placeholder="••••••••" disabled />
+              <form onSubmit={handleUpdatePassword}>
+                <div className="platform-fs-body">
+                  <p style={{ color: "var(--platform-text-muted)", fontSize: "0.9rem" }}>
+                    To maintain the security of your account, you can update your password below.
+                  </p>
+                  <div className="platform-form-group" style={{ marginTop: "1rem" }}>
+                    <label>Current Password</label>
+                    <input
+                      type="password"
+                      className="platform-form-input"
+                      placeholder="Enter current password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="platform-form-group">
+                    <label>New Password</label>
+                    <input
+                      type="password"
+                      className="platform-form-input"
+                      placeholder="Enter new password (min. 8 characters)"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="platform-form-group">
-                  <label>New Password</label>
-                  <input type="password" className="platform-form-input" placeholder="New password" disabled />
+                <div className="platform-fs-footer">
+                  <button type="submit" className="platform-btn-primary" disabled={updatingPassword}>
+                    {updatingPassword ? "Updating..." : "Update Password"}
+                  </button>
                 </div>
-              </div>
-              <div className="platform-fs-footer">
-                <button className="platform-btn-primary" disabled>
-                  Update Password
-                </button>
-              </div>
+              </form>
             </div>
           )}
         </div>

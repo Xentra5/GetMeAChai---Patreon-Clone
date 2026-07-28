@@ -3,12 +3,17 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import tea from "../images/tea.png";
 import supportImg from "../images/support.png";
 import doller from "../images/doller.png";
 import profile from "../images/profile.png";
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [selectedChais, setSelectedChais] = useState(3);
   const [claimed, setClaimed] = useState(false);
@@ -19,6 +24,13 @@ export default function Home() {
     supportersCount: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/dashboard");
+    }
+  }, [status, router]);
+
 
   useEffect(() => {
     async function loadStats() {
@@ -47,12 +59,28 @@ export default function Home() {
     }
   };
 
+  if (status === "loading" || status === "authenticated") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#090a0f] text-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 rounded-full border-4 border-rose-500/20 animate-ping"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-t-rose-500 border-r-rose-500/50 border-b-rose-500/10 border-l-rose-500/50 animate-spin"></div>
+          </div>
+          <p className="text-gray-400 text-sm font-medium tracking-wide animate-pulse">
+            Checking session...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="text-white min-h-screen">
-      
+
       {/* ── HERO SECTION (Split Layout) ── */}
       <section className="max-w-7xl mx-auto px-6 py-16 md:py-24 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        
+
         {/* Left Column: Context & Interactive Claim Input */}
         <div className="lg:col-span-7 flex flex-col justify-center text-center lg:text-left anim-fade-up">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-800 bg-[#121316] text-gray-300 text-xs font-semibold w-fit mx-auto lg:mx-0 mb-6">
@@ -109,7 +137,7 @@ export default function Home() {
         {/* Right Column: High-Fidelity Creator Card Mockup */}
         <div className="lg:col-span-5 flex justify-center items-center anim-fade-up anim-delay-1 select-none">
           <div className="w-full max-w-sm rounded-3xl border border-slate-800 bg-[#121316] p-5 shadow-lg relative overflow-hidden backdrop-blur-md">
-            
+
             {/* Mock Profile Card Cover Banner */}
             <div className="h-24 w-full rounded-2xl bg-slate-800 relative overflow-hidden border border-white/5">
               <div className="absolute top-3 right-3 px-2 py-0.5 rounded bg-black/40 text-[10px] border border-white/10 tracking-widest uppercase font-mono text-blue-400">
@@ -155,18 +183,17 @@ export default function Home() {
                     key={val}
                     type="button"
                     onClick={() => setSelectedChais(val)}
-                    className={`py-2 px-1 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer ${
-                      selectedChais === val
+                    className={`py-2 px-1 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer ${selectedChais === val
                         ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20"
                         : "bg-black/30 border-white/5 text-gray-400 hover:border-blue-500/30"
-                    }`}
+                      }`}
                   >
                     ☕ {val} Chai{val > 1 ? "s" : ""}
                   </button>
                 ))}
               </div>
-              
-              <button 
+
+              <button
                 type="button"
                 className="mt-4 w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
@@ -236,11 +263,11 @@ export default function Home() {
         <div className="h-px bg-gradient-to-r from-transparent via-slate-800 to-transparent mb-16" />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
+
           {/* Visual Highlight Block */}
           <div className="order-2 lg:order-1 flex justify-center">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-              
+
               <div className="border border-slate-800 bg-[#121316] p-6 rounded-2xl flex flex-col gap-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-900/40 border border-blue-500/20 flex items-center justify-center text-xl">
                   💎
@@ -295,7 +322,7 @@ export default function Home() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
+
           <div className="border border-slate-800/80 border-t-2 border-t-amber-600 bg-[#121316] rounded-2xl p-6 relative">
             <div className="absolute top-4 right-4 text-4xl font-extrabold font-mono text-amber-500/10 select-none">01</div>
             <h3 className="text-lg font-bold text-white mb-2">Claim your page</h3>

@@ -104,22 +104,23 @@ export async function POST(request) {
     const creatorSlug = to_username.toLowerCase().replace(/\s+/g, "");
     const loggedUserEmail = session.user.email.toLowerCase();
 
-    // Find the logged-in user (supporter)
-    const loggedUser = await User.findOne({ email: loggedUserEmail });
-    if (!loggedUser) {
-      return NextResponse.json({ error: "Supporter profile not found" }, { status: 404 });
+    const supportAmount = Number(amount);
+    if (isNaN(supportAmount) || supportAmount <= 0) {
+      return NextResponse.json({ error: "Invalid support amount" }, { status: 400 });
     }
 
-    const supportAmount = Number(amount);
-    if (loggedUser.walletBalance < supportAmount) {
+    // Deduct from supporter's wallet atomically to prevent race condition/double-spend
+    const loggedUser = await User.findOneAndUpdate(
+      { email: loggedUserEmail, walletBalance: { $gte: supportAmount } },
+      { $inc: { walletBalance: -supportAmount } },
+      { new: true }
+    );
+
+    if (!loggedUser) {
       return NextResponse.json({
-        error: `Insufficient wallet balance. You have ₹${loggedUser.walletBalance.toLocaleString("en-IN")} INR, but support requires ₹${supportAmount.toLocaleString("en-IN")} INR.`
+        error: `Insufficient wallet balance or supporter profile not found.`
       }, { status: 400 });
     }
-
-    // Deduct from supporter's wallet
-    loggedUser.walletBalance -= supportAmount;
-    await loggedUser.save();
 
     // Create wallet transaction record for supporter
     await WalletTransaction.create({

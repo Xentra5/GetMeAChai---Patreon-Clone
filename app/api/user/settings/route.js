@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/db/connectDb";
 import User from "@/models/user";
+import bcrypt from "bcryptjs";
 
 export async function GET() {
   try {
@@ -67,6 +68,8 @@ export async function POST(request) {
       payoutMinimumThreshold,
       avatarUrl,
       coverUrl,
+      currentPassword,
+      newPassword,
     } = await request.json();
 
     // Validate monthlyGoal if provided
@@ -81,6 +84,11 @@ export async function POST(request) {
     }
 
     await connectDB();
+
+    const userToVerify = await User.findOne({ email: session.user.email.toLowerCase() });
+    if (!userToVerify) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
     const updateFields = {};
     if (monthlyGoal !== undefined) updateFields.monthlyGoal = Number(monthlyGoal);
@@ -98,6 +106,24 @@ export async function POST(request) {
     if (payoutMinimumThreshold !== undefined) updateFields.payoutMinimumThreshold = Number(payoutMinimumThreshold);
     if (avatarUrl !== undefined) updateFields.avatarUrl = avatarUrl.trim();
     if (coverUrl !== undefined) updateFields.coverUrl = coverUrl.trim();
+
+    if (currentPassword && newPassword) {
+      if (newPassword.length < 8) {
+        return NextResponse.json(
+          { error: "New password must be at least 8 characters long" },
+          { status: 400 }
+        );
+      }
+      const isMatch = await bcrypt.compare(currentPassword, userToVerify.password);
+      if (!isMatch) {
+        return NextResponse.json(
+          { error: "Incorrect current password" },
+          { status: 400 }
+        );
+      }
+      const salt = await bcrypt.genSalt(10);
+      updateFields.password = await bcrypt.hash(newPassword, salt);
+    }
 
     const user = await User.findOneAndUpdate(
       { email: session.user.email.toLowerCase() },
