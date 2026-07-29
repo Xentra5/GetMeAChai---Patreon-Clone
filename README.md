@@ -9,12 +9,13 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 ### 1. Modern Layout & Global Navigation
 * **Root Layout (`app/layout.js`):** Integrated Google Fonts (`Inter` for primary typography, `Instrument Serif` for stylized serif elements). Features a beautiful deep-space radial gradient background (`radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)`) that gives the app a premium, modern aesthetic.
 * **Glassmorphic Navigation Bar (`Components/NavBar.js`):** Built a responsive sticky navbar with backdrop blur (`backdrop-blur-md`), clean navigation links (Home, About, Contact), and stateful buttons for user sessions (Signup, Login, Dashboard, Role Selection).
+* **Dynamic Sidebar Component (`Components/Sidebar.js`):** Centralized navigation sidebar supporting both Creator and Student views dynamically, displaying role-relevant action hubs (Overview, Payouts, Wallet, Audience, explore feeds) and updating state from backend user session records.
 * **Styled Footer (`Components/Footer.js`):** Minimal, cohesive footer displaying copyright and branding info with gradient backgrounds.
 * **Session Wrapper (`Components/SesssionWrapper.js`):** Encapsulates NextAuth's `SessionProvider` to enable application-wide session management.
-* **Dynamic Navigation Sidebar (`Components/Sidebar.js`):** A shared, highly interactive sidebar navigation component that dynamically adjusts links, headers, and navigation contexts based on whether the logged-in user is viewing in **Creator** or **Student** mode.
 
 ### 2. High-Converting Landing Page with Live Statistics (`app/page.js`)
 * **Hero Section:** Features smooth fade-in animations and text highlighting the platform's mission.
+* **Active Session Guard:** Seamless user experience that automatically redirects authenticated landing page visitors directly to their respective `/dashboard` views.
 * **Interactive CTAs:** Includes an animated "Start Here" button with slide-in shimmer, scale transitions, and hover-triggered backdrop highlights.
 * **Live Database Stats Dashboard (`app/api/landing-stats/route.js`):** Displays real-time platform impact statistics aggregated dynamically from the MongoDB database, including:
   * **Creators Empowered:** Total count of active registered creators on the platform.
