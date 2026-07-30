@@ -33,12 +33,12 @@ const NavBar = () => {
             </Link>
           </li>
           <li>
-            <Link href="#" className="hover:text-purple-400 transition-colors cursor-pointer">
+            <Link href="/about" className="hover:text-purple-400 transition-colors cursor-pointer">
               About
             </Link>
           </li>
           <li>
-            <Link href="#" className="hover:text-purple-400 transition-colors cursor-pointer">
+            <Link href="/contact" className="hover:text-purple-400 transition-colors cursor-pointer">
               Contact
             </Link>
           </li>

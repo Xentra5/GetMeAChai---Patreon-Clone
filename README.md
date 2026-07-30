@@ -92,6 +92,7 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
   * **Unified Balance Display:** Renders the creator's live wallet balance in metrics dashboards and navigation panels.
  
 ### 9. Unified Platform Hub & Gated Content (`app/dashboard/platform/page.js`)
+* **Interactive Skeleton/Shimmer Loaders:** Integrates CSS keyframe-based shimmer placeholders (`platform-shimmer-card` / `platform-shimmer-item`) in views like settings, search, and membership tabs to provide an extremely smooth loading experience while data fetches asynchronously.
 * **Advanced Search Creators (`Components/Platform/SearchCreators.js`):**
   * Live category filtering ribbon (`All`, `Design`, `Engineering`, `Writing`, `Video`).
   * Advanced sorting drop-down: Sort by Popularity (Views), Name (A-Z), or Funding Goal.
@@ -115,6 +116,28 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 ### 11. Payout Configuration & Threshold Safeguards
 * **Payout Schedule Frequency:** Creators can customize their automatic deposit payouts (e.g. Every Friday, Monthly, or Manual) in their settings.
 * **Minimum Withdrawal Enforcement:** Restricts creator balance withdrawals below a configurable threshold (e.g., minimum ₹1,000 withdrawal) to safeguard billing transfers.
+
+---
+
+## 🛡️ Security Features & Best Practices
+
+To safeguard user accounts, transaction integrity, and overall web reliability, the application implements the following robust security measures:
+
+### 1. Atomic Wallet Balance Operations
+* **Prevention of Race Conditions:** Wallet deductions (processed during creator support events in `app/api/support/route.js`) utilize Mongoose's `findOneAndUpdate` combined with the `$inc` operator. This ensures balance checks and deductions occur in a single, atomic operation, eliminating concurrency bugs such as double-spending.
+
+### 2. Strong Password Complexity Policies
+* **Harden User Credentials:** The registration system (`app/api/signup/route.js`) parses passwords against a strict complexity regex. User passwords must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one numeric digit, and one special character.
+
+### 3. Secure HTTP Response Headers
+* **Defense in Depth:** Configured in `next.config.mjs` to inject protective security headers into all responses:
+  * `X-Frame-Options: DENY` (prevents clickjacking attacks).
+  * `X-Content-Type-Options: nosniff` (mitigates MIME-type sniffing).
+  * `Referrer-Policy: strict-origin-when-cross-origin` (avoids data leakages through referrers).
+
+### 4. Active Session Guards & Redirection Flow
+* **Seamless & Secure Redirection:** Landing page (`/`), login (`/login`), and signup (`/signup`) routes inspect authentication states instantly. Logged-in users are automatically redirected away from non-dashboard entry portals.
+* **Unified Sign Out Accessibility:** Easy-to-use Sign Out buttons are integrated into the main navigation, the settings navigation panel, and even directly on the session redirection screen for quick account switching.
 
 ---
 
