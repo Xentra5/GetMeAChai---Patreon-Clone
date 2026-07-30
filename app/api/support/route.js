@@ -93,7 +93,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Please sign in to support creators." }, { status: 401 });
     }
 
-    const { name, to_username, amount, message } = await request.json();
+    const { name, to_username, amount, message, paymentMethod } = await request.json();
 
     if (!to_username || !amount) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -109,28 +109,49 @@ export async function POST(request) {
       return NextResponse.json({ error: "Invalid support amount" }, { status: 400 });
     }
 
-    // Deduct from supporter's wallet atomically to prevent race condition/double-spend
-    const loggedUser = await User.findOneAndUpdate(
-      { email: loggedUserEmail, walletBalance: { $gte: supportAmount } },
-      { $inc: { walletBalance: -supportAmount } },
-      { new: true }
-    );
+    let loggedUser = null;
+    const isDirectPayment = paymentMethod === "Razorpay";
 
-    if (!loggedUser) {
-      return NextResponse.json({
-        error: `Insufficient wallet balance or supporter profile not found.`
-      }, { status: 400 });
+    if (isDirectPayment) {
+      // Direct payments bypass supporter wallet balance deduction but still require supporter user profile
+      loggedUser = await User.findOne({ email: loggedUserEmail });
+      if (!loggedUser) {
+        return NextResponse.json({ error: "Supporter profile not found." }, { status: 400 });
+      }
+
+      // Create wallet transaction record for supporter (as payment)
+      await WalletTransaction.create({
+        email: loggedUserEmail,
+        amount: supportAmount,
+        type: "payment",
+        status: "success",
+        description: `Supported creator ${to_username} via Razorpay`,
+        paymentMethod: "Razorpay",
+      });
+    } else {
+      // Deduct from supporter's wallet atomically to prevent race condition/double-spend
+      loggedUser = await User.findOneAndUpdate(
+        { email: loggedUserEmail, walletBalance: { $gte: supportAmount } },
+        { $inc: { walletBalance: -supportAmount } },
+        { new: true }
+      );
+
+      if (!loggedUser) {
+        return NextResponse.json({
+          error: `Insufficient wallet balance or supporter profile not found.`
+        }, { status: 400 });
+      }
+
+      // Create wallet transaction record for supporter
+      await WalletTransaction.create({
+        email: loggedUserEmail,
+        amount: supportAmount,
+        type: "payment",
+        status: "success",
+        description: `Supported creator ${to_username}`,
+        paymentMethod: "Wallet",
+      });
     }
-
-    // Create wallet transaction record for supporter
-    await WalletTransaction.create({
-      email: loggedUserEmail,
-      amount: supportAmount,
-      type: "payment",
-      status: "success",
-      description: `Supported creator ${to_username}`,
-      paymentMethod: "Wallet",
-    });
 
     // Find creator user to credit their wallet balance
     const allUsers = await User.find({ role: "creator" });
@@ -147,7 +168,7 @@ export async function POST(request) {
         type: "deposit",
         status: "success",
         description: `Received support from ${loggedUser.name || loggedUser.email}`,
-        paymentMethod: "Wallet",
+        paymentMethod: isDirectPayment ? "Razorpay" : "Wallet",
       });
     }
 

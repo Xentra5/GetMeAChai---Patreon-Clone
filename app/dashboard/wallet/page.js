@@ -25,7 +25,8 @@ import {
   Building2,
   Lock,
   MapPin,
-  MessageSquare
+  MessageSquare,
+  Globe
 } from "lucide-react";
 import Sidebar from "@/Components/Sidebar";
 import "../dashboard.css";

@@ -55,6 +55,16 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
   const [totalSupportReceived, setTotalSupportReceived] = useState(0);
   const [activeProfileTab, setActiveProfileTab] = useState("updates");
   
+  // Razorpay Simulation modal states
+  const [showRazorpayModal, setShowRazorpayModal] = useState(false);
+  const [razorpayMethod, setRazorpayMethod] = useState("card"); // 'card' | 'upi'
+  const [razorpayCardNumber, setRazorpayCardNumber] = useState("");
+  const [razorpayCardExpiry, setRazorpayCardExpiry] = useState("");
+  const [razorpayCardCvv, setRazorpayCardCvv] = useState("");
+  const [razorpayCardHolder, setRazorpayCardHolder] = useState("");
+  const [razorpayUpiId, setRazorpayUpiId] = useState("");
+  const [razorpayProcessing, setRazorpayProcessing] = useState(false);
+
   const [messages, setMessages] = useState([]);
   const [newMessageContent, setNewMessageContent] = useState("");
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -271,38 +281,81 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
       return;
     }
 
+    // Instead of submitting directly to backend, trigger the simulated Razorpay modal
+    setRazorpayCardNumber("");
+    setRazorpayCardExpiry("");
+    setRazorpayCardCvv("");
+    setRazorpayCardHolder("");
+    setRazorpayUpiId("");
+    setRazorpayMethod("card");
+    setShowRazorpayModal(true);
+  };
+
+  const confirmRazorpayPayment = async (e) => {
+    if (e) e.preventDefault();
+    const amount = selectedAmount === "Custom" ? Number(customAmount) : Number(selectedAmount);
+    if (!amount || isNaN(amount) || amount <= 0) {
+      addToast("Please enter or select a valid amount.", "error");
+      return;
+    }
+
+    if (razorpayMethod === "card") {
+      const cleanCard = razorpayCardNumber.replace(/\s+/g, "");
+      if (cleanCard.length < 15) {
+        addToast("Please enter a valid Card Number.", "error");
+        return;
+      }
+      if (razorpayCardExpiry.length < 5) {
+        addToast("Please enter a valid expiry date (MM/YY).", "error");
+        return;
+      }
+      if (razorpayCardCvv.length < 3) {
+        addToast("Please enter a valid CVV.", "error");
+        return;
+      }
+    } else if (razorpayMethod === "upi") {
+      if (!razorpayUpiId.includes("@")) {
+        addToast("Please enter a valid UPI ID (e.g. user@okaxis).", "error");
+        return;
+      }
+    }
+
     const amountInINR = isUSD ? amount * 83.5 : amount;
 
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/support", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: session?.user?.name || session?.user?.email?.split("@")[0] || "Anonymous Supporter",
-          to_username: creatorSlug,
-          amount: amountInINR,
-          message: supportMessage,
-        }),
-      });
+    setRazorpayProcessing(true);
+    // Simulate 2 seconds of secure payment processing
+    setTimeout(async () => {
+      try {
+        const res = await fetch("/api/support", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: session?.user?.name || session?.user?.email?.split("@")[0] || "Anonymous Supporter",
+            to_username: creatorSlug,
+            amount: amountInINR,
+            message: supportMessage,
+            paymentMethod: "Razorpay"
+          }),
+        });
 
-      if (res.ok) {
-        addToast(`Successfully supported with ${isUSD ? `$${amount}` : `₹${amount}`}!`, "success");
-        setSupportMessage("");
-        setCustomAmount("");
-        
-        // Refresh feed
-        fetchFeedAndPosts();
-      } else {
-        const errData = await res.json();
-        addToast(errData.error || "Failed to process support transaction.", "error");
+        if (res.ok) {
+          addToast(`Successfully supported with ${isUSD ? `$${amount}` : `₹${amount}`}!`, "success");
+          setSupportMessage("");
+          setCustomAmount("");
+          setShowRazorpayModal(false);
+          // Refresh feed
+          fetchFeedAndPosts();
+        } else {
+          const errData = await res.json();
+          addToast(errData.error || "Failed to process support transaction.", "error");
+        }
+      } catch (err) {
+        console.error("Error processing support payment:", err);
+        addToast("Failed to connect to the server.", "error");
+      } finally {
+        setRazorpayProcessing(false);
       }
-    } catch (err) {
-      console.error("Error processing support payment:", err);
-      addToast("Failed to connect to the server.", "error");
-    } finally {
-      setSubmitting(false);
-    }
+    }, 2000);
   };
 
   const handleCreatePost = async () => {
@@ -1005,6 +1058,353 @@ export default function PublicProfile({ creator, userRegion: propUserRegion }) {
             >
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Simulated Razorpay Checkout Modal */}
+      {showRazorpayModal && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(3, 7, 18, 0.85)",
+          backdropFilter: "blur(6px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+          padding: "16px"
+        }}>
+          <div style={{
+            backgroundColor: "#0d111d",
+            border: "1px solid #1f293d",
+            borderRadius: "12px",
+            width: "100%",
+            maxWidth: "460px",
+            overflow: "hidden",
+            boxShadow: "0 25px 50px -12px rgba(0,0,0,0.7)",
+            position: "relative"
+          }}>
+            {/* Header / Razorpay Branding banner */}
+            <div style={{
+              background: "linear-gradient(135deg, #0b2559 0%, #001233 100%)",
+              padding: "20px",
+              borderBottom: "1px solid #1e293b",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "1.1rem" }}>💳</span>
+                  <span style={{ color: "#fff", fontWeight: 700, fontSize: "1.1rem", letterSpacing: "-0.3px" }}>Razorpay Checkout</span>
+                </div>
+                <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "2px" }}>
+                  Paying to {creatorName}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <span style={{ fontSize: "0.75rem", color: "#94a3b8", display: "block" }}>Amount</span>
+                <span style={{ fontSize: "1.2rem", fontWeight: 800, color: "#38bdf8" }}>
+                  {isUSD ? `$${selectedAmount === "Custom" ? customAmount : selectedAmount}` : `₹${selectedAmount === "Custom" ? customAmount : selectedAmount}`}
+                </span>
+              </div>
+            </div>
+
+            {/* Main Checkout Area */}
+            <form onSubmit={confirmRazorpayPayment}>
+              <div style={{ display: "flex", minHeight: "220px" }}>
+                {/* Left Method Selection Sidebar */}
+                <div style={{
+                  width: "120px",
+                  backgroundColor: "#080c14",
+                  borderRight: "1px solid #1f293d",
+                  display: "flex",
+                  flexDirection: "column"
+                }}>
+                  <button
+                    type="button"
+                    onClick={() => setRazorpayMethod("card")}
+                    style={{
+                      padding: "16px 12px",
+                      background: razorpayMethod === "card" ? "#0f172a" : "transparent",
+                      border: "none",
+                      borderLeft: razorpayMethod === "card" ? "3px solid #3b82f6" : "3px solid transparent",
+                      color: razorpayMethod === "card" ? "#3b82f6" : "#94a3b8",
+                      fontSize: "0.8rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      textAlign: "left",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}
+                  >
+                    <span style={{ fontSize: "1.2rem" }}>💳</span>
+                    Cards
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRazorpayMethod("upi")}
+                    style={{
+                      padding: "16px 12px",
+                      background: razorpayMethod === "upi" ? "#0f172a" : "transparent",
+                      border: "none",
+                      borderLeft: razorpayMethod === "upi" ? "3px solid #3b82f6" : "3px solid transparent",
+                      color: razorpayMethod === "upi" ? "#3b82f6" : "#94a3b8",
+                      fontSize: "0.8rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      textAlign: "left",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}
+                  >
+                    <span style={{ fontSize: "1.2rem" }}>📱</span>
+                    UPI / QR
+                  </button>
+                </div>
+
+                {/* Right Form Fields */}
+                <div style={{ flex: 1, padding: "20px", backgroundColor: "#0d111d" }}>
+                  {razorpayMethod === "card" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: "4px" }}>Card Number</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="4111 1111 1111 1111"
+                          value={razorpayCardNumber}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/\D/g, "");
+                            if (value.length > 16) value = value.slice(0, 16);
+                            const formatted = value.match(/.{1,4}/g)?.join(" ") || "";
+                            setRazorpayCardNumber(formatted);
+                          }}
+                          style={{
+                            width: "100%",
+                            padding: "8px 10px",
+                            borderRadius: "6px",
+                            backgroundColor: "#070a13",
+                            border: "1px solid #1f293d",
+                            color: "#fff",
+                            outline: "none",
+                            fontSize: "0.85rem"
+                          }}
+                        />
+                      </div>
+                      <div style={{ display: "flex", gap: "12px" }}>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: "4px" }}>Expiry (MM/YY)</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="12/28"
+                            value={razorpayCardExpiry}
+                            onChange={(e) => {
+                              let value = e.target.value.replace(/\D/g, "");
+                              if (value.length > 4) value = value.slice(0, 4);
+                              if (value.length > 2) {
+                                setRazorpayCardExpiry(`${value.slice(0, 2)}/${value.slice(2)}`);
+                              } else {
+                                setRazorpayCardExpiry(value);
+                              }
+                            }}
+                            style={{
+                              width: "100%",
+                              padding: "8px 10px",
+                              borderRadius: "6px",
+                              backgroundColor: "#070a13",
+                              border: "1px solid #1f293d",
+                              color: "#fff",
+                              outline: "none",
+                              fontSize: "0.85rem"
+                            }}
+                          />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: "4px" }}>CVV</label>
+                          <input
+                            type="password"
+                            required
+                            placeholder="•••"
+                            value={razorpayCardCvv}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, "").slice(0, 3);
+                              setRazorpayCardCvv(value);
+                            }}
+                            style={{
+                              width: "100%",
+                              padding: "8px 10px",
+                              borderRadius: "6px",
+                              backgroundColor: "#070a13",
+                              border: "1px solid #1f293d",
+                              color: "#fff",
+                              outline: "none",
+                              fontSize: "0.85rem"
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: "4px" }}>Card Holder Name</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. John Doe"
+                          value={razorpayCardHolder}
+                          onChange={(e) => setRazorpayCardHolder(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "8px 10px",
+                            borderRadius: "6px",
+                            backgroundColor: "#070a13",
+                            border: "1px solid #1f293d",
+                            color: "#fff",
+                            outline: "none",
+                            fontSize: "0.85rem",
+                            textTransform: "capitalize"
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {razorpayMethod === "upi" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: "4px" }}>UPI ID / VPA</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="username@bank"
+                          value={razorpayUpiId}
+                          onChange={(e) => setRazorpayUpiId(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "10px 12px",
+                            borderRadius: "6px",
+                            backgroundColor: "#070a13",
+                            border: "1px solid #1f293d",
+                            color: "#fff",
+                            outline: "none",
+                            fontSize: "0.85rem"
+                          }}
+                        />
+                      </div>
+                      <div style={{
+                        padding: "12px",
+                        backgroundColor: "rgba(59, 130, 246, 0.05)",
+                        border: "1px dashed rgba(59, 130, 246, 0.2)",
+                        borderRadius: "6px",
+                        fontSize: "0.75rem",
+                        color: "#60a5fa",
+                        lineHeight: "1.4"
+                      }}>
+                        💡 <strong>Simulated Sandbox:</strong> You can enter any mock address (e.g. <code>test@upi</code>) to complete the test payment successfully.
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons Footer */}
+              <div style={{
+                padding: "16px 20px",
+                borderTop: "1px solid #1f293d",
+                display: "flex",
+                gap: "12px",
+                alignItems: "center"
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setShowRazorpayModal(false)}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    borderRadius: "6px",
+                    backgroundColor: "#1e293b",
+                    border: "none",
+                    color: "#f1f5f9",
+                    fontSize: "0.85rem",
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 2,
+                    padding: "10px",
+                    borderRadius: "6px",
+                    backgroundColor: "#3b82f6",
+                    border: "none",
+                    color: "#fff",
+                    fontSize: "0.85rem",
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}
+                >
+                  Pay {isUSD ? `$${selectedAmount === "Custom" ? customAmount : selectedAmount}` : `₹${selectedAmount === "Custom" ? customAmount : selectedAmount}`}
+                </button>
+              </div>
+            </form>
+
+            {/* Secure payment footer note */}
+            <div style={{
+              padding: "10px",
+              backgroundColor: "#070a13",
+              fontSize: "0.7rem",
+              color: "#64748b",
+              textAlign: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "4px"
+            }}>
+              🔒 Razorpay Trusted Security | Demo Mode Enabled
+            </div>
+
+            {/* Full-screen Loading Overlay for simulated transaction processing */}
+            {razorpayProcessing && (
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                backgroundColor: "rgba(13, 17, 29, 0.95)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "16px",
+                zIndex: 10
+              }}>
+                <div style={{
+                  width: "40px",
+                  height: "40px",
+                  border: "3px solid #3b82f6",
+                  borderTopColor: "transparent",
+                  borderRadius: "50%",
+                  animation: "spin 1s linear infinite"
+                }} />
+                <style>{`
+                  @keyframes spin {
+                    to { transform: rotate(360deg); }
+                  }
+                `}</style>
+                <div style={{ fontSize: "0.9rem", color: "#f8fafc", fontWeight: 600 }}>
+                  Processing Secure Payment...
+                </div>
+                <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
+                  Please do not close this window or hit back.
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -4,15 +4,15 @@ import User from "@/models/user";
 
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const q = searchParams.get("q");
-    const category = searchParams.get("category");
-    const sortBy = searchParams.get("sortBy");
-
     await connectDB();
     
     // Build query filters (Only onboarded & verified creators are listed)
     const queryObj = { role: "creator", isCreatorVerified: true };
+
+    const { searchParams } = new URL(request.url);
+    const q = searchParams.get("q");
+    const category = searchParams.get("category");
+    const sortBy = searchParams.get("sortBy");
 
     if (q && q.trim()) {
       const searchRegex = { $regex: q.trim(), $options: "i" };
