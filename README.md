@@ -42,6 +42,7 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 * **Live Password Strength Meter:** Evaluates password input in real-time (from "Very Weak" to "Very Strong") with an animated five-bar indicator showing progress and dynamic color states.
 * **Password Visibility Toggle:** Integrated a stateful show/hide toggle for password entries.
 * **Multi-provider Social Auth:** Custom buttons for single-click GitHub, Google, and Apple third-party sign-ins.
+* **Forgot Password Flow (`app/forgot-password/page.js`):** Allows users to request password reset links via email.
 
 ### 5. Interactive Role Selection Portal (`app/select-role/page.js`)
 * **Dynamic Role Chooser:** Allows users to select their profile type as either a **Student** (to learn and support) or a **Creator** (to share work and get funded) using beautifully styled, interactive cards with micro-animations.
@@ -99,6 +100,7 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
   * Dynamically queries the `/api/creators` endpoint with parameters (`q`, `category`, `sortBy`).
 * **Public Profile Page (`Components/Platform/PublicProfile.js`):**
   * Public-facing page rendering creator bio, metrics, social links, support message board, and support/chai payment section.
+  * **Razorpay Checkout Option:** Supporter actions now present a payment method selector, allowing users to choose between local Wallet balance deduction or a direct simulation gateway bypassing wallet balance checks.
 * **Gated Creator Posts System (`app/api/posts/route.js`):**
   * Allows creators to write and publish updates locked behind a specific cumulative donation amount (minimum threshold).
   * Evaluates logged-in supporter's cumulative successful support to the creator dynamically.
@@ -116,6 +118,10 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 ### 11. Payout Configuration & Threshold Safeguards
 * **Payout Schedule Frequency:** Creators can customize their automatic deposit payouts (e.g. Every Friday, Monthly, or Manual) in their settings.
 * **Minimum Withdrawal Enforcement:** Restricts creator balance withdrawals below a configurable threshold (e.g., minimum ₹1,000 withdrawal) to safeguard billing transfers.
+
+### 12. Information Portals (`app/about/page.js` & `app/contact/page.js`)
+* **About Page:** Houses details on platform mission, creator economics, and user FAQs.
+* **Contact Page:** Features interactive inquiry forms for feedback and creator partnership applications.
 
 ---
 
@@ -138,6 +144,12 @@ To safeguard user accounts, transaction integrity, and overall web reliability, 
 ### 4. Active Session Guards & Redirection Flow
 * **Seamless & Secure Redirection:** Landing page (`/`), login (`/login`), and signup (`/signup`) routes inspect authentication states instantly. Logged-in users are automatically redirected away from non-dashboard entry portals.
 * **Unified Sign Out Accessibility:** Easy-to-use Sign Out buttons are integrated into the main navigation, the settings navigation panel, and even directly on the session redirection screen for quick account switching.
+
+### 5. Multi-Factor Security (2FA OTP)
+* **Secure Login OTP Validation:** Authenticated users can activate Two-Factor Authentication (2FA) in Settings. When enabled, the system leverages a dedicated verification route (`app/api/auth/2fa/send-otp`) to generate, persist, and mail numeric verification codes to users.
+
+### 6. Email-Verified Password Resets
+* **Tokenized Recoveries:** Provides secure recovery procedures utilizing tokens that verify validity, check timestamps for expiration, and update passwords securely.
 
 ---
 
