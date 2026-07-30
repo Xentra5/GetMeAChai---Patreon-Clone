@@ -14,16 +14,26 @@ export default function ForgotPasswordPage() {
     setError("");
 
     if (!identifier.trim()) {
-      setError("Please enter your email or phone number.");
+      setError("Please enter your email address.");
       return;
     }
 
     setLoading(true);
 
     try {
-      // Demo simulation for reset request
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setSubmitted(true);
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: identifier }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Something went wrong. Please try again.");
+      } else {
+        setSubmitted(true);
+      }
     } catch (err) {
       setError("Failed to send reset link. Please try again later.");
     } finally {
@@ -40,7 +50,7 @@ export default function ForgotPasswordPage() {
           Reset Password
         </h1>
         <p className="mb-8 text-center text-gray-400 text-sm">
-          Enter your email address or phone number to recover your account.
+          Enter your email address to receive a secure password reset link.
         </p>
 
         {/* Card */}
@@ -48,11 +58,11 @@ export default function ForgotPasswordPage() {
           {submitted ? (
             <div className="text-center space-y-4">
               <div className="w-12 h-12 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full flex items-center justify-center mx-auto text-xl font-bold">
-                ✓
+                ✉️
               </div>
-              <h2 className="text-xl font-bold text-white">Check Your Inbox / Messages</h2>
+              <h2 className="text-xl font-bold text-white">Check Your Email</h2>
               <p className="text-sm text-gray-400">
-                If an account exists for <span className="text-white font-medium">{identifier}</span>, we have sent instructions to reset your password.
+                If an account exists for <span className="text-white font-medium">{identifier}</span>, we have sent a reset password link to your inbox.
               </p>
               <div className="pt-4">
                 <button
@@ -60,7 +70,7 @@ export default function ForgotPasswordPage() {
                   onClick={() => setSubmitted(false)}
                   className="text-xs text-gray-400 hover:text-white underline transition-colors"
                 >
-                  Try another email or phone number
+                  Try another email address
                 </button>
               </div>
             </div>
@@ -72,21 +82,21 @@ export default function ForgotPasswordPage() {
                 </div>
               )}
 
-              {/* Email / Phone input */}
+              {/* Email input */}
               <div>
                 <label
                   htmlFor="identifier"
                   className="mb-1.5 block text-sm font-medium text-white/70"
                 >
-                  Email address or Phone number
+                  Email Address
                 </label>
                 <input
                   id="identifier"
-                  type="text"
+                  type="email"
                   required
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="you@example.com or +1234567890"
+                  placeholder="you@example.com"
                   className="w-full rounded-lg border border-slate-800 bg-[#090a0f] px-4 py-3 text-white placeholder-gray-500 outline-none transition duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
@@ -97,7 +107,7 @@ export default function ForgotPasswordPage() {
                 disabled={loading}
                 className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-all duration-200 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Sending instructions..." : "Send Reset Link / OTP"}
+                {loading ? "Sending link..." : "Send Reset Link"}
               </button>
 
               {/* Back to Login Link */}

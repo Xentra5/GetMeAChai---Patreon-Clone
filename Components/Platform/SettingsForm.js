@@ -36,6 +36,11 @@ export default function SettingsForm({ userRegion, userRole }) {
 
   // Toast notifications state
   const [toasts, setToasts] = useState([]);
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const [updating2FA, setUpdating2FA] = useState(false);
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [confirm2FAPassword, setConfirm2FAPassword] = useState("");
+  const [confirm2FAPasswordRepeat, setConfirm2FAPasswordRepeat] = useState("");
 
   const addToast = (message, type = "success") => {
     const id = Date.now();
@@ -72,6 +77,7 @@ export default function SettingsForm({ userRegion, userRole }) {
           setPayoutNextDate(data.payoutNextDate || "Friday, Oct 25");
           setPayoutProcessingTime(data.payoutProcessingTime || "1-2 business days");
           setPayoutMinimumThreshold(data.payoutMinimumThreshold ?? 1000);
+          setIs2FAEnabled(data.is2FAEnabled ?? false);
         } else {
           addToast("Failed to load settings profile.", "error");
         }
@@ -659,43 +665,218 @@ export default function SettingsForm({ userRegion, userRole }) {
           )}
 
           {activeTab === "Security" && (
-            <div className="platform-form-section">
-              <div className="platform-fs-header">Account Security</div>
-              <form onSubmit={handleUpdatePassword}>
+            <>
+              <div className="platform-form-section">
+                <div className="platform-fs-header">Account Security</div>
+                <form onSubmit={handleUpdatePassword}>
+                  <div className="platform-fs-body">
+                    <p style={{ color: "var(--platform-text-muted)", fontSize: "0.9rem" }}>
+                      To maintain the security of your account, you can update your password below.
+                    </p>
+                    <div className="platform-form-group" style={{ marginTop: "1rem" }}>
+                      <label>Current Password</label>
+                      <input
+                        type="password"
+                        className="platform-form-input"
+                        placeholder="Enter current password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="platform-form-group">
+                      <label>New Password</label>
+                      <input
+                        type="password"
+                        className="platform-form-input"
+                        placeholder="Enter new password (min. 8 characters)"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="platform-fs-footer">
+                    <button type="submit" className="platform-btn-primary" disabled={updatingPassword}>
+                      {updatingPassword ? "Updating..." : "Update Password"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="platform-form-section" style={{ marginTop: "2rem" }}>
+                <div className="platform-fs-header">Two-Factor Authentication (2FA)</div>
                 <div className="platform-fs-body">
-                  <p style={{ color: "var(--platform-text-muted)", fontSize: "0.9rem" }}>
-                    To maintain the security of your account, you can update your password below.
+                  <p style={{ color: "var(--platform-text-muted)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
+                    Add an extra layer of security to your account. When enabled, logging in will require verification via a 6-digit OTP code sent to your email.
                   </p>
-                  <div className="platform-form-group" style={{ marginTop: "1rem" }}>
-                    <label>Current Password</label>
-                    <input
-                      type="password"
-                      className="platform-form-input"
-                      placeholder="Enter current password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="platform-form-group">
-                    <label>New Password</label>
-                    <input
-                      type="password"
-                      className="platform-form-input"
-                      placeholder="Enter new password (min. 8 characters)"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                    />
+
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    background: "rgba(255,255,255,0.02)",
+                    padding: "1rem 1.25rem",
+                    borderRadius: "8px",
+                    border: "1px solid var(--platform-border-subtle)"
+                  }}>
+                    <div>
+                      <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>Email Verification (OTP)</span>
+                      <div style={{ fontSize: "0.8rem", color: "var(--platform-text-faint)", marginTop: "3px" }}>
+                        Status: <strong style={{ color: is2FAEnabled ? "#10b981" : "#f43f5e" }}>{is2FAEnabled ? "Enabled" : "Disabled"}</strong>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setConfirm2FAPassword("");
+                        setConfirm2FAPasswordRepeat("");
+                        setShow2FAModal(true);
+                      }}
+                      className="platform-btn-outline"
+                      style={{
+                        color: is2FAEnabled ? "#f43f5e" : "var(--platform-brand)",
+                        borderColor: is2FAEnabled ? "rgba(244, 63, 94, 0.3)" : "rgba(168, 85, 247, 0.3)",
+                        background: is2FAEnabled ? "rgba(244, 63, 94, 0.05)" : "rgba(168, 85, 247, 0.05)"
+                      }}
+                      disabled={updating2FA}
+                    >
+                      {is2FAEnabled ? "Disable 2FA" : "Enable 2FA"}
+                    </button>
                   </div>
                 </div>
-                <div className="platform-fs-footer">
-                  <button type="submit" className="platform-btn-primary" disabled={updatingPassword}>
-                    {updatingPassword ? "Updating..." : "Update Password"}
-                  </button>
+              </div>
+
+              {/* Custom Modal for password verification twice */}
+              {show2FAModal && (
+                <div style={{
+                  position: "fixed",
+                  inset: 0,
+                  backgroundColor: "rgba(0, 0, 0, 0.8)",
+                  backdropFilter: "blur(4px)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 9999,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "#121316",
+                    border: "1px solid #1f2937",
+                    borderRadius: "16px",
+                    padding: "24px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    boxShadow: "0 20px 25px -5px rgba(0,0,0,0.5)"
+                  }}>
+                    <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: "#fff", marginBottom: "8px" }}>
+                      {is2FAEnabled ? "Disable" : "Enable"} Two-Factor Authentication
+                    </h3>
+                    <p style={{ fontSize: "0.85rem", color: "var(--platform-text-muted)", marginBottom: "20px", lineHeight: "1.4" }}>
+                      Please verify your password to secure this request. You must enter your current password twice to confirm changes.
+                    </p>
+
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (confirm2FAPassword !== confirm2FAPasswordRepeat) {
+                        addToast("Passwords do not match.", "error");
+                        return;
+                      }
+
+                      setShow2FAModal(false);
+                      setUpdating2FA(true);
+                      try {
+                        const res = await fetch("/api/user/settings", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            toggle2FA: !is2FAEnabled,
+                            confirmPasswordFor2FA: confirm2FAPassword
+                          })
+                        });
+
+                        const data = await res.json();
+                        if (res.ok) {
+                          setIs2FAEnabled(!is2FAEnabled);
+                          addToast(`Successfully ${!is2FAEnabled ? "enabled" : "disabled"} Two-Factor Authentication!`);
+                        } else {
+                          addToast(data.error || "Verification failed.", "error");
+                        }
+                      } catch (err) {
+                        addToast("Error updating security options", "error");
+                      } finally {
+                        setUpdating2FA(false);
+                      }
+                    }} className="space-y-4">
+                      <div>
+                        <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "rgba(255,255,255,0.7)", display: "block", marginBottom: "6px" }}>
+                          Enter Password
+                        </label>
+                        <input
+                          type="password"
+                          required
+                          value={confirm2FAPassword}
+                          onChange={(e) => setConfirm2FAPassword(e.target.value)}
+                          placeholder="••••••••"
+                          style={{
+                            width: "100%",
+                            borderRadius: "8px",
+                            border: "1px solid #1f2937",
+                            backgroundColor: "#090a0f",
+                            padding: "10px 12px",
+                            color: "#fff",
+                            outline: "none",
+                            fontSize: "0.9rem"
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "rgba(255,255,255,0.7)", display: "block", marginBottom: "6px" }}>
+                          Confirm Password Again
+                        </label>
+                        <input
+                          type="password"
+                          required
+                          value={confirm2FAPasswordRepeat}
+                          onChange={(e) => setConfirm2FAPasswordRepeat(e.target.value)}
+                          placeholder="••••••••"
+                          style={{
+                            width: "100%",
+                            borderRadius: "8px",
+                            border: "1px solid #1f2937",
+                            backgroundColor: "#090a0f",
+                            padding: "10px 12px",
+                            color: "#fff",
+                            outline: "none",
+                            fontSize: "0.9rem"
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ display: "flex", gap: "12px", paddingTop: "12px" }}>
+                        <button
+                          type="button"
+                          onClick={() => setShow2FAModal(false)}
+                          className="platform-btn-outline"
+                          style={{ flex: 1, padding: "10px 0", justifyContent: "center" }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="platform-btn-primary"
+                          style={{ flex: 1, padding: "10px 0", background: is2FAEnabled ? "#f43f5e" : "var(--platform-brand)" }}
+                        >
+                          Confirm
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
-              </form>
-            </div>
+              )}
+            </>
           )}
         </div>
       </div>

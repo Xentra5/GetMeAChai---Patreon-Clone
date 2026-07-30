@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import connectDB from "@/db/connectDb"
 import User from "@/models/user"
 import bcrypt from "bcryptjs"
+import crypto from "crypto"
 
 export const authOptions = {
   providers: [
@@ -37,6 +38,25 @@ export const authOptions = {
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) {
           throw new Error("Invalid password");
+        }
+
+        // Check if 2FA is active for this account
+        if (user.is2FAEnabled) {
+          if (!credentials.otp) {
+            // Throw special signal that tells front-end to request the OTP
+            throw new Error("2FA_REQUIRED");
+          }
+
+          // Verify OTP token
+          const hashedOtp = crypto.createHash("sha256").update(credentials.otp).digest("hex");
+          if (user.twoFactorToken !== hashedOtp || new Date() > user.twoFactorExpires) {
+            throw new Error("Invalid or expired 2FA verification code");
+          }
+
+          // Clear token after successful usage
+          user.twoFactorToken = null;
+          user.twoFactorExpires = null;
+          await user.save();
         }
 
         return {

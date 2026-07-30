@@ -37,6 +37,7 @@ export async function GET() {
       payoutNextDate: user.payoutNextDate || "Friday, Oct 25",
       payoutProcessingTime: user.payoutProcessingTime || "1-2 business days",
       payoutMinimumThreshold: user.payoutMinimumThreshold ?? 1000,
+      is2FAEnabled: user.is2FAEnabled ?? false,
     });
   } catch (error) {
     console.error("GET Settings error:", error);
@@ -70,6 +71,8 @@ export async function POST(request) {
       coverUrl,
       currentPassword,
       newPassword,
+      toggle2FA,
+      confirmPasswordFor2FA,
     } = await request.json();
 
     // Validate monthlyGoal if provided
@@ -91,6 +94,24 @@ export async function POST(request) {
     }
 
     const updateFields = {};
+
+    // 2FA activation/deactivation security step
+    if (toggle2FA !== undefined) {
+      if (!confirmPasswordFor2FA) {
+        return NextResponse.json(
+          { error: "Password verification required to modify 2FA settings" },
+          { status: 400 }
+        );
+      }
+      const isMatch = await bcrypt.compare(confirmPasswordFor2FA, userToVerify.password);
+      if (!isMatch) {
+        return NextResponse.json(
+          { error: "Incorrect password verification" },
+          { status: 400 }
+        );
+      }
+      updateFields.is2FAEnabled = toggle2FA;
+    }
     if (monthlyGoal !== undefined) updateFields.monthlyGoal = Number(monthlyGoal);
     if (twitterHandle !== undefined) updateFields.twitterHandle = twitterHandle.trim();
     if (githubHandle !== undefined) updateFields.githubHandle = githubHandle.trim();
