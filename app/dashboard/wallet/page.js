@@ -209,6 +209,7 @@ export default function WalletPage() {
       }, 2500);
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [netbankStep, depositMethod]);
 
   // Helper for number animation

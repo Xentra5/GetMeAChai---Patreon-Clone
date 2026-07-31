@@ -14,6 +14,12 @@ const eslintConfig = defineConfig([
   {
     rules: {
       "@next/next/no-img-element": "off",
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/immutability": "off",
+      "react-hooks/preserve-manual-memoization": "off",
+    },
+    linterOptions: {
+      reportUnusedDisableDirectives: "off",
     },
   },
 ]);

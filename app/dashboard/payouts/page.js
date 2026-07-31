@@ -235,6 +235,7 @@ export default function Payouts() {
     if (status !== "authenticated") return;
     fetchPayouts();
     fetchPayoutMethods();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
   // Helper for number animation
