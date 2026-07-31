@@ -453,7 +453,7 @@ export default function Dashboard() {
             <p>
               {projectedOverageVal > 0 ? (
                 <>
-                  You're projected to exceed your monthly goal by{" "}
+                  You&apos;re projected to exceed your monthly goal by{" "}
                   <span className="txt-success fw-600">
                     {isUSD ? "$" : "₹"}{projectedOverageVal.toLocaleString(isUSD ? "en-US" : "en-IN")}
                   </span>.

@@ -1273,7 +1273,7 @@ export default function WalletPage() {
                 {depositMethod === "applepay" && checkoutCurrency === "USD" && (
                   <div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid var(--border-subtle)", padding: "14px", borderRadius: "8px", marginTop: "12px", textAlign: "center" }}>
                     <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "12px" }}>
-                      Complete express checkout instantly using your device's primary wallet.
+                      Complete express checkout instantly using your device&apos;s primary wallet.
                     </p>
                     <button
                       type="submit"
