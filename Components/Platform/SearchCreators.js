@@ -94,12 +94,21 @@ export default function SearchCreators({ onSelectProfile }) {
 
       {loading ? (
         <div className="platform-creator-grid">
-          {[1, 2, 3].map((n) => (
-            <div key={n} className="platform-card platform-shimmer-card">
-              <div className="platform-shimmer-item" style={{ height: "40px", width: "40px", borderRadius: "50%", marginBottom: "1rem" }} />
-              <div className="platform-shimmer-item" style={{ height: "18px", width: "70%", marginBottom: "0.5rem" }} />
-              <div className="platform-shimmer-item" style={{ height: "14px", width: "90%", marginBottom: "1.5rem" }} />
-              <div className="platform-shimmer-item" style={{ height: "30px", width: "100%" }} />
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <div key={n} className="platform-card platform-shimmer-card animate-pulse" style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "1.5rem" }}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-zinc-800 animate-pulse" />
+                <div className="flex-1">
+                  <div className="h-4 bg-zinc-800 rounded w-2/3 mb-2 animate-pulse" />
+                  <div className="h-3 bg-zinc-900 rounded w-1/3 animate-pulse" />
+                </div>
+              </div>
+              <div className="h-3 bg-zinc-800 rounded w-full mb-2 animate-pulse" />
+              <div className="h-3 bg-zinc-800 rounded w-4/5 mb-4 animate-pulse" />
+              <div className="flex justify-between items-center pt-2 border-t border-zinc-800/50">
+                <div className="h-3 bg-zinc-900 rounded w-1/4 animate-pulse" />
+                <div className="h-3 bg-purple-900/50 rounded w-1/3 animate-pulse" />
+              </div>
             </div>
           ))}
         </div>

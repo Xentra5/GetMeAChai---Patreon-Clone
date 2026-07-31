@@ -68,8 +68,8 @@ export default function AddPayoutMethod() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [userData, setUserData] = useState(null);
 
-  // Tab State
-  const [activeTab, setActiveTab] = useState("national"); // "national" or "international"
+  // Tab State derived from selected region
+  const activeTab = userRegion === "IND" ? "national" : "international";
   const [methodType, setMethodType] = useState("bank"); // "bank", "upi", "paypal", "stripe", "crypto", "wise", "payoneer", "wire"
 
   // Form Fields
@@ -375,42 +375,11 @@ export default function AddPayoutMethod() {
 
           {/* Form Card */}
           <div className="card" style={{ padding: "2rem", border: "1px solid var(--border-strong)", background: "rgba(10, 10, 10, 0.6)", backdropFilter: "blur(12px)" }}>
-            {/* Category selection tabs */}
-            <div style={{ display: "flex", gap: "12px", borderBottom: "1px solid var(--border-subtle)", paddingBottom: "1.2rem", marginBottom: "1.5rem" }}>
-              <button
-                type="button"
-                onClick={() => setActiveTab("national")}
-                style={{
-                  background: activeTab === "national" ? "var(--border-strong)" : "transparent",
-                  border: "1px solid " + (activeTab === "national" ? "var(--border-strong)" : "transparent"),
-                  color: activeTab === "national" ? "var(--text-main)" : "var(--text-muted)",
-                  padding: "8px 16px",
-                  borderRadius: "var(--radius-sm)",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                  fontSize: "0.9rem",
-                  transition: "var(--transition)"
-                }}
-              >
-                🇮🇳 National / Domestic
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("international")}
-                style={{
-                  background: activeTab === "international" ? "var(--border-strong)" : "transparent",
-                  border: "1px solid " + (activeTab === "international" ? "var(--border-strong)" : "transparent"),
-                  color: activeTab === "international" ? "var(--text-main)" : "var(--text-muted)",
-                  padding: "8px 16px",
-                  borderRadius: "var(--radius-sm)",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                  fontSize: "0.9rem",
-                  transition: "var(--transition)"
-                }}
-              >
-                🌐 International
-              </button>
+            {/* Regional Payout Header */}
+            <div style={{ borderBottom: "1px solid var(--border-subtle)", paddingBottom: "1.2rem", marginBottom: "1.5rem" }}>
+              <span style={{ fontSize: "0.95rem", fontWeight: "600", color: "var(--brand, #a855f7)", display: "flex", alignItems: "center", gap: "6px" }}>
+                {userRegion === "IND" ? "🇮🇳 Domestic Payout Options (India)" : "🇺🇸 USA & International Payout Options"}
+              </span>
             </div>
 
             {/* Inner method type selection */}

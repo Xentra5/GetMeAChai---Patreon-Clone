@@ -35,10 +35,14 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
   * **GitHub OAuth** for developers and creators.
   * **Credentials Provider** integrated directly with the MongoDB backend to validate hashed passwords.
 
-### 4. Dedicated Sign Up & Login Portals with Session Redirection
+### 4. Dedicated Sign Up & Login Portals with Stateless OTP Verification
 * **Active Session Guard:** Seamless user experience that automatically redirects authenticated users directly to `/dashboard` if they attempt to access the `/login` or `/signup` portals.
 * **Interactive Sign Up Form (`app/signup/page.js`):** Fully styled username, email, password, and confirm password fields.
-* **Auto-Login on Signup:** Automatically logs the user in immediately after registering a new account, removing unnecessary steps.
+* **Stateless Email OTP Verification during Signup:**
+  * To prevent database clutter from unverified/fake accounts, registration employs a 2-step stateless flow.
+  * **Step 1**: Validates user inputs, generates a 6-digit OTP, mails it to the user, and signs the signup payload + hashed OTP signature using the `NEXTAUTH_SECRET` into a stateless token.
+  * **Step 2**: The user enters the OTP code from their email. The server decodes the token, verifies the signature/expiry, matches the OTP code, hashes the password, and creates the account.
+* **Auto-Login on Verification:** Automatically logs the user in immediately after successful OTP verification, removing unnecessary steps.
 * **Live Password Strength Meter:** Evaluates password input in real-time (from "Very Weak" to "Very Strong") with an animated five-bar indicator showing progress and dynamic color states.
 * **Password Visibility Toggle:** Integrated a stateful show/hide toggle for password entries.
 * **Multi-provider Social Auth:** Custom buttons for single-click GitHub, Google, and Apple third-party sign-ins.
@@ -81,11 +85,10 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
   * Contains a **Withdrawal Request Modal** allowing creators to instantly request payouts to their configured methods (Stripe, PayPal, Crypto).
   * Includes transaction logs with search, time frame, and status-based filtering options.
 * **Add Payout Method Portal (`app/dashboard/payouts/add/page.js` & [PayoutMethod.js](file:///d:/PracticeReact/getchai/models/PayoutMethod.js)):**
-  * **Region-Based Localization:** Offers a region-selector to choose between United States (USD) and India (INR) localizations.
-  * **Segmented Options:** Separates layout into **National / Domestic** and **International** tabs.
-  * **Multiple Payout Channels:**
-    * *National/Domestic:* Direct Bank Transfer (with Account Holder Name, Bank Name, Account Number, and IFSC validation) and UPI ID.
-    * *International:* PayPal, Stripe (Connected Accounts), Wise, Payoneer, International Wire Transfer (SWIFT/IBAN), and Pink/USDC Crypto Wallets (Polygon chain).
+  * **Region-Based Localization Options:** Offers a region-selector to choose between United States (USD) and India (INR) localizations.
+  * **Dynamic Regional Option Filtering:** 
+    * If region is set to **India (INR)**, it hides international methods and renders only India-compatible channels (Domestic Bank Account, UPI ID).
+    * If region is set to **United States (USD)**, it hides domestic India tabs and displays only USA-compatible channels (Stripe, PayPal, Wise, Wire Transfer, Crypto Wallet).
   * **Dynamic Validation & Mongoose Persistence:** Validates credentials on submission and posts directly to `/api/dashboard/payouts/methods` to persist in MongoDB.
 * **Virtual Wallet & Deposits System (`app/dashboard/wallet/page.js` & [WalletTransaction.js](file:///d:/PracticeReact/getchai/models/WalletTransaction.js)):**
   * **Mock Deposit Manager:** Provides interface to load mock currency (INR) using preset buttons (e.g., ₹500, ₹2,000) or custom input values.
@@ -129,26 +132,32 @@ A premium crowdfunding platform clone built with **Next.js 16** and styled with 
 
 To safeguard user accounts, transaction integrity, and overall web reliability, the application implements the following robust security measures:
 
-### 1. Atomic Wallet Balance Operations
-* **Prevention of Race Conditions:** Wallet deductions (processed during creator support events in `app/api/support/route.js`) utilize Mongoose's `findOneAndUpdate` combined with the `$inc` operator. This ensures balance checks and deductions occur in a single, atomic operation, eliminating concurrency bugs such as double-spending.
+### 1. Atomic Wallet Balance Operations & MongoDB Transactions
+* **ACID Transactions:** Wallet deductions, creator wallet balance credits, and transaction logging inside `app/api/support/route.js` execute inside Mongoose Session Transactions (`withTransaction()`) to guarantee database consistency and eliminate concurrency double-spending.
+* **Prevention of Race Conditions:** Utilizes Mongoose's `findOneAndUpdate` combined with the `$inc` operator for atomic state updates.
 
 ### 2. Strong Password Complexity Policies
-* **Harden User Credentials:** The registration system (`app/api/signup/route.js`) parses passwords against a strict complexity regex. User passwords must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one numeric digit, and one special character.
+* **Harden User Credentials:** The registration system parses passwords against a strict complexity regex requiring at least 8 characters with uppercase, lowercase, numbers, and special symbols.
 
-### 3. Secure HTTP Response Headers
+### 3. Zod Payload Schema Validation
+* **Strict Parameter Checking:** Integrates `zod` schema definitions in [lib/validations.js](file:///d:/PracticeReact/getchai/lib/validations.js) to validate and sanitize incoming payloads for support payments and settings updates.
+
+### 4. Secure HTTP Response Headers
 * **Defense in Depth:** Configured in `next.config.mjs` to inject protective security headers into all responses:
-  * `X-Frame-Options: DENY` (prevents clickjacking attacks).
+  * `X-Frame-Options: DENY` (prevents clickjacking).
   * `X-Content-Type-Options: nosniff` (mitigates MIME-type sniffing).
-  * `Referrer-Policy: strict-origin-when-cross-origin` (avoids data leakages through referrers).
+  * `Referrer-Policy: strict-origin-when-cross-origin` (avoids data leakages).
+  * `Strict-Transport-Security: max-age=31536000; includeSubDomains` (enforces HTTPS).
+  * `Permissions-Policy` (limits browser features).
+  * `X-XSS-Protection: 1; mode=block` (mitigates cross-site scripting).
 
-### 4. Active Session Guards & Redirection Flow
+### 5. Active Session Guards & Redirection Flow
 * **Seamless & Secure Redirection:** Landing page (`/`), login (`/login`), and signup (`/signup`) routes inspect authentication states instantly. Logged-in users are automatically redirected away from non-dashboard entry portals.
-* **Unified Sign Out Accessibility:** Easy-to-use Sign Out buttons are integrated into the main navigation, the settings navigation panel, and even directly on the session redirection screen for quick account switching.
 
-### 5. Multi-Factor Security (2FA OTP)
-* **Secure Login OTP Validation:** Authenticated users can activate Two-Factor Authentication (2FA) in Settings. When enabled, the system leverages a dedicated verification route (`app/api/auth/2fa/send-otp`) to generate, persist, and mail numeric verification codes to users.
+### 6. Multi-Factor Security (2FA OTP)
+* **Secure Login OTP Validation:** Authenticated users can activate Two-Factor Authentication (2FA) in Settings. When enabled, the system leverages a dedicated verification route to generate, persist, and mail numeric verification codes to users.
 
-### 6. Email-Verified Password Resets
+### 7. Email-Verified Password Resets
 * **Tokenized Recoveries:** Provides secure recovery procedures utilizing tokens that verify validity, check timestamps for expiration, and update passwords securely.
 
 ---
@@ -160,6 +169,7 @@ To safeguard user accounts, transaction integrity, and overall web reliability, 
 * **Styling:** Tailwind CSS v4 (using `@tailwindcss/postcss`)
 * **Database:** MongoDB & Mongoose
 * **Authentication:** NextAuth.js & bcryptjs
+* **Validation:** Zod
 * **Analytics/Charts:** Chart.js
 * **Icons:** Lucide React
 * **Fonts:** Google Fonts (Inter, Instrument Serif)
@@ -187,6 +197,11 @@ GITHUB_SECRET=your_github_client_secret_here
 # Google OAuth credentials
 GOOGLE_ID=your_google_client_id_here
 GOOGLE_SECRET=your_google_client_secret_here
+
+# Brevo Email Configuration
+BREVO_API_KEY=your_brevo_api_key
+BREVO_SENDER_EMAIL=your_verified_sender_email
+BREVO_SENDER_NAME=GetMeAChai
 ```
 
 ### 2. Install Dependencies
@@ -223,4 +238,3 @@ To build only the Next.js container (e.g., for production deployment clouds):
 docker build -t getchai-app .
 docker run -p 3000:3000 --env-file .env.local getchai-app
 ```
-

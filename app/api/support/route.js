@@ -5,6 +5,8 @@ import connectDB from "@/db/connectDb";
 import Payment from "@/models/Payment";
 import User from "@/models/user";
 import WalletTransaction from "@/models/WalletTransaction";
+import { supportSchema } from "@/lib/validations";
+import mongoose from "mongoose";
 
 export async function GET(request) {
   try {
@@ -93,97 +95,186 @@ export async function POST(request) {
       return NextResponse.json({ error: "Please sign in to support creators." }, { status: 401 });
     }
 
-    const { name, to_username, amount, message, paymentMethod } = await request.json();
+    const body = await request.json();
 
-    if (!to_username || !amount) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    // 1. Zod Input Schema Validation
+    const parseResult = supportSchema.safeParse(body);
+    if (!parseResult.success) {
+      const firstError = parseResult.error.issues[0]?.message || "Invalid input data";
+      return NextResponse.json({ error: firstError }, { status: 400 });
     }
+
+    const { name, to_username: creatorSlug, amount: supportAmount, message, paymentMethod } = parseResult.data;
+    const loggedUserEmail = session.user.email.toLowerCase();
 
     await connectDB();
 
-    const creatorSlug = to_username.toLowerCase().replace(/\s+/g, "");
-    const loggedUserEmail = session.user.email.toLowerCase();
-
-    const supportAmount = Number(amount);
-    if (isNaN(supportAmount) || supportAmount <= 0) {
-      return NextResponse.json({ error: "Invalid support amount" }, { status: 400 });
-    }
-
-    let loggedUser = null;
     const isDirectPayment = paymentMethod === "Razorpay";
+    let newPayment = null;
 
-    if (isDirectPayment) {
-      // Direct payments bypass supporter wallet balance deduction but still require supporter user profile
-      loggedUser = await User.findOne({ email: loggedUserEmail });
-      if (!loggedUser) {
-        return NextResponse.json({ error: "Supporter profile not found." }, { status: 400 });
+    // 2. Transaction Execution with Session (ACID compliance)
+    const dbSession = await mongoose.startSession();
+    try {
+      await dbSession.withTransaction(async () => {
+        let loggedUser = null;
+
+        if (isDirectPayment) {
+          loggedUser = await User.findOne({ email: loggedUserEmail }).session(dbSession);
+          if (!loggedUser) {
+            throw new Error("Supporter profile not found.");
+          }
+
+          await WalletTransaction.create(
+            [
+              {
+                email: loggedUserEmail,
+                amount: supportAmount,
+                type: "payment",
+                status: "success",
+                description: `Supported creator ${creatorSlug} via Razorpay`,
+                paymentMethod: "Razorpay",
+              },
+            ],
+            { session: dbSession }
+          );
+        } else {
+          // Atomically deduct wallet balance
+          loggedUser = await User.findOneAndUpdate(
+            { email: loggedUserEmail, walletBalance: { $gte: supportAmount } },
+            { $inc: { walletBalance: -supportAmount } },
+            { new: true, session: dbSession }
+          );
+
+          if (!loggedUser) {
+            throw new Error("Insufficient wallet balance or supporter profile not found.");
+          }
+
+          await WalletTransaction.create(
+            [
+              {
+                email: loggedUserEmail,
+                amount: supportAmount,
+                type: "payment",
+                status: "success",
+                description: `Supported creator ${creatorSlug}`,
+                paymentMethod: "Wallet",
+              },
+            ],
+            { session: dbSession }
+          );
+        }
+
+        // Find creator user to credit their wallet balance
+        const allUsers = await User.find({ role: "creator" }).session(dbSession);
+        const creatorUser = allUsers.find(
+          (u) => (u.name || u.email.split("@")[0]).toLowerCase().replace(/\s+/g, "") === creatorSlug
+        );
+
+        if (creatorUser) {
+          creatorUser.walletBalance = (creatorUser.walletBalance || 0) + supportAmount;
+          await creatorUser.save({ session: dbSession });
+
+          await WalletTransaction.create(
+            [
+              {
+                email: creatorUser.email.toLowerCase(),
+                amount: supportAmount,
+                type: "deposit",
+                status: "success",
+                description: `Received support from ${loggedUser.name || loggedUser.email}`,
+                paymentMethod: isDirectPayment ? "Razorpay" : "Wallet",
+              },
+            ],
+            { session: dbSession }
+          );
+        }
+
+        const createdPayments = await Payment.create(
+          [
+            {
+              name: name || "Anonymous Supporter",
+              to_username: creatorSlug,
+              amount: supportAmount,
+              message: message || "",
+              from_email: loggedUserEmail,
+              status: "success",
+            },
+          ],
+          { session: dbSession }
+        );
+
+        newPayment = createdPayments[0];
+      });
+    } catch (txError) {
+      // Fallback for non-replica set MongoDB environments (like single-node local dev)
+      if (txError.message?.includes("Transaction numbers are only allowed on a replica set member")) {
+        console.warn("MongoDB transactions require a replica set. Falling back to non-session operations.");
+        let loggedUser = null;
+        if (isDirectPayment) {
+          loggedUser = await User.findOne({ email: loggedUserEmail });
+          if (!loggedUser) return NextResponse.json({ error: "Supporter profile not found." }, { status: 400 });
+          await WalletTransaction.create({
+            email: loggedUserEmail,
+            amount: supportAmount,
+            type: "payment",
+            status: "success",
+            description: `Supported creator ${creatorSlug} via Razorpay`,
+            paymentMethod: "Razorpay",
+          });
+        } else {
+          loggedUser = await User.findOneAndUpdate(
+            { email: loggedUserEmail, walletBalance: { $gte: supportAmount } },
+            { $inc: { walletBalance: -supportAmount } },
+            { new: true }
+          );
+          if (!loggedUser) return NextResponse.json({ error: "Insufficient wallet balance." }, { status: 400 });
+          await WalletTransaction.create({
+            email: loggedUserEmail,
+            amount: supportAmount,
+            type: "payment",
+            status: "success",
+            description: `Supported creator ${creatorSlug}`,
+            paymentMethod: "Wallet",
+          });
+        }
+
+        const allUsers = await User.find({ role: "creator" });
+        const creatorUser = allUsers.find(
+          (u) => (u.name || u.email.split("@")[0]).toLowerCase().replace(/\s+/g, "") === creatorSlug
+        );
+
+        if (creatorUser) {
+          creatorUser.walletBalance = (creatorUser.walletBalance || 0) + supportAmount;
+          await creatorUser.save();
+          await WalletTransaction.create({
+            email: creatorUser.email.toLowerCase(),
+            amount: supportAmount,
+            type: "deposit",
+            status: "success",
+            description: `Received support from ${loggedUser.name || loggedUser.email}`,
+            paymentMethod: isDirectPayment ? "Razorpay" : "Wallet",
+          });
+        }
+
+        newPayment = await Payment.create({
+          name: name || "Anonymous Supporter",
+          to_username: creatorSlug,
+          amount: supportAmount,
+          message: message || "",
+          from_email: loggedUserEmail,
+          status: "success",
+        });
+      } else {
+        throw txError;
       }
-
-      // Create wallet transaction record for supporter (as payment)
-      await WalletTransaction.create({
-        email: loggedUserEmail,
-        amount: supportAmount,
-        type: "payment",
-        status: "success",
-        description: `Supported creator ${to_username} via Razorpay`,
-        paymentMethod: "Razorpay",
-      });
-    } else {
-      // Deduct from supporter's wallet atomically to prevent race condition/double-spend
-      loggedUser = await User.findOneAndUpdate(
-        { email: loggedUserEmail, walletBalance: { $gte: supportAmount } },
-        { $inc: { walletBalance: -supportAmount } },
-        { new: true }
-      );
-
-      if (!loggedUser) {
-        return NextResponse.json({
-          error: `Insufficient wallet balance or supporter profile not found.`
-        }, { status: 400 });
-      }
-
-      // Create wallet transaction record for supporter
-      await WalletTransaction.create({
-        email: loggedUserEmail,
-        amount: supportAmount,
-        type: "payment",
-        status: "success",
-        description: `Supported creator ${to_username}`,
-        paymentMethod: "Wallet",
-      });
+    } finally {
+      await dbSession.endSession();
     }
-
-    // Find creator user to credit their wallet balance
-    const allUsers = await User.find({ role: "creator" });
-    const creatorUser = allUsers.find(u => (u.name || u.email.split("@")[0]).toLowerCase().replace(/\s+/g, "") === creatorSlug);
-
-    if (creatorUser) {
-      creatorUser.walletBalance = (creatorUser.walletBalance || 0) + supportAmount;
-      await creatorUser.save();
-
-      // Create wallet transaction record for creator
-      await WalletTransaction.create({
-        email: creatorUser.email.toLowerCase(),
-        amount: supportAmount,
-        type: "deposit",
-        status: "success",
-        description: `Received support from ${loggedUser.name || loggedUser.email}`,
-        paymentMethod: isDirectPayment ? "Razorpay" : "Wallet",
-      });
-    }
-
-    const newPayment = await Payment.create({
-      name: name?.trim() || "Anonymous Supporter",
-      to_username: creatorSlug,
-      amount: supportAmount,
-      message: message?.trim() || "",
-      from_email: loggedUserEmail,
-      status: "success",
-    });
 
     return NextResponse.json({ success: true, payment: newPayment });
   } catch (error) {
     console.error("Error saving support payment:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }
+
