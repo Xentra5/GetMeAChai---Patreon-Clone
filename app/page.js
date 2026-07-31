@@ -274,7 +274,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-lg font-bold text-blue-400">0% Platform Fee</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">
-                  We don't take a cut of your hard work. 100% of the support sent by your fans lands directly in your payout account.
+                  We don&apos;t take a cut of your hard work. 100% of the support sent by your fans lands directly in your payout account.
                 </p>
               </div>
 

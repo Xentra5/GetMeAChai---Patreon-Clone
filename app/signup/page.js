@@ -205,7 +205,7 @@ export default function SignPage() {
                             </button>
 
                             <p className="text-center text-sm text-gray-400">
-                                Didn't receive the code?{" "}
+                                Didn&apos;t receive the code?{" "}
                                 <button
                                     type="button"
                                     onClick={handleSubmit}

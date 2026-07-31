@@ -16,6 +16,9 @@ export default function DirectMessagesView({ userRegion = "USA" }) {
 
   const isUSD = userRegion === "USA";
 
+  const selectedUsername = selectedConversation?.username;
+  const selectedEmail = selectedConversation?.email;
+
   // Fetch unique conversations / contacts
   const fetchConversations = useCallback(async () => {
     try {
@@ -26,31 +29,34 @@ export default function DirectMessagesView({ userRegion = "USA" }) {
         setIsCreator(data.isCreator || false);
         
         // Select the first conversation if none is selected
-        if (data.conversations && data.conversations.length > 0 && !selectedConversation) {
-          setSelectedConversation(data.conversations[0]);
-        }
+        setSelectedConversation(prev => {
+          if (!prev && data.conversations && data.conversations.length > 0) {
+            return data.conversations[0];
+          }
+          return prev;
+        });
       }
     } catch (error) {
       console.error("Error loading DM conversations:", error);
     } finally {
       setLoadingConversations(false);
     }
-  }, [selectedConversation]);
+  }, []);
 
   useEffect(() => {
     fetchConversations();
-  }, []);
+  }, [fetchConversations]);
 
   // Fetch messages for selected conversation
   const fetchMessages = useCallback(async () => {
-    if (!selectedConversation) return;
+    if (!selectedUsername && !selectedEmail) return;
     setLoadingMessages(true);
     try {
       const creatorSlug = isCreator 
         ? session?.user?.name?.toLowerCase().replace(/\s+/g, "") || session?.user?.email?.split("@")[0].toLowerCase() 
-        : selectedConversation.username;
+        : selectedUsername;
       
-      const supporterEmail = isCreator ? selectedConversation.email : session?.user?.email;
+      const supporterEmail = isCreator ? selectedEmail : session?.user?.email;
 
       const res = await fetch(`/api/messages?creator=${creatorSlug}&supporter=${supporterEmail}`);
       if (res.ok) {
@@ -58,24 +64,30 @@ export default function DirectMessagesView({ userRegion = "USA" }) {
         setMessages(data.messages || []);
         
         // Update cumulative support / tier details in real-time
-        setSelectedConversation(prev => ({
-          ...prev,
-          cumulativeSupport: data.cumulativeSupport || prev.cumulativeSupport,
-          isGoldTier: data.isGoldTier || prev.isGoldTier
-        }));
+        setSelectedConversation(prev => {
+          if (!prev) return prev;
+          if (prev.cumulativeSupport === data.cumulativeSupport && prev.isGoldTier === data.isGoldTier) {
+            return prev;
+          }
+          return {
+            ...prev,
+            cumulativeSupport: data.cumulativeSupport !== undefined ? data.cumulativeSupport : prev.cumulativeSupport,
+            isGoldTier: data.isGoldTier !== undefined ? data.isGoldTier : prev.isGoldTier
+          };
+        });
       }
     } catch (error) {
       console.error("Error fetching DM messages:", error);
     } finally {
       setLoadingMessages(false);
     }
-  }, [selectedConversation, isCreator, session]);
+  }, [selectedUsername, selectedEmail, isCreator, session]);
 
   useEffect(() => {
-    if (selectedConversation) {
+    if (selectedUsername || selectedEmail) {
       fetchMessages();
     }
-  }, [selectedConversation]);
+  }, [selectedUsername, selectedEmail, fetchMessages]);
 
   // Scroll to bottom of chat
   useEffect(() => {

@@ -92,7 +92,7 @@ export default function WelcomeTransition() {
           </h1>
 
           <p id="hero-text" className={animateText ? "animate-in" : ""}>
-            We've set up everything based on your preferences. Dive in to start
+            We&apos;ve set up everything based on your preferences. Dive in to start
             exploring tools designed specifically for you.
           </p>
 

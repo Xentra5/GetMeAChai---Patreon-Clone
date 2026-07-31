@@ -121,7 +121,7 @@ export default function Step2() {
                     ) : (
                         <>
                             <div className="file-upload-icon">📄</div>
-                            <p>Drag & drop your Passport or Driver's License here, or click to upload</p>
+                            <p>Drag & drop your Passport or Driver&apos;s License here, or click to upload</p>
                         </>
                     )}
                 </label>

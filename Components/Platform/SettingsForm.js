@@ -249,6 +249,7 @@ export default function SettingsForm({ userRegion, userRole }) {
                   <div className="platform-fs-body">
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", marginBottom: "1rem" }}>
                       <div className="platform-avatar-upload">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={getAvatarUrl(avatarUrl)}
                           className="platform-avatar-preview"

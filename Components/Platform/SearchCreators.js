@@ -39,6 +39,7 @@ export default function SearchCreators({ onSelectProfile }) {
   // Fetch real creators when category or sort option changes
   useEffect(() => {
     getCreators();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCategory, sortBy]);
 
   const handleSearchSubmit = (e) => {
