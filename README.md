@@ -1,178 +1,51 @@
 # GetMeAChai ☕
 
-A premium crowdfunding platform clone built with **Next.js 16** and styled with **Tailwind CSS v4**, designed for creators to receive support, connect with their audience, and get funded by their fans and followers.
+A Patreon-clone crowdfunding platform built for creators to receive support, connect with their audience, and receive funding from their fans. I built this project to learn modern Next.js 16 development, implement a robust security architecture (including database transactions), and build a complete dashboard experience for content creators.
 
----
-
-## 🚀 Key Features & Layouts
-
-### 1. Modern Layout & Global Navigation
-* **Root Layout (`app/layout.js`):** Integrated Google Fonts (`Inter` for primary typography, `Instrument Serif` for stylized serif elements). Features a beautiful deep-space radial gradient background (`radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)`) that gives the app a premium, modern aesthetic.
-* **Glassmorphic Navigation Bar (`Components/NavBar.js`):** Built a responsive sticky navbar with backdrop blur (`backdrop-blur-md`), clean navigation links (Home, About, Contact), and stateful buttons for user sessions (Signup, Login, Dashboard, Role Selection).
-* **Dynamic Sidebar Component (`Components/Sidebar.js`):** Centralized navigation sidebar supporting both Creator and Student views dynamically, displaying role-relevant action hubs (Overview, Payouts, Wallet, Audience, explore feeds) and updating state from backend user session records.
-* **Styled Footer (`Components/Footer.js`):** Minimal, cohesive footer displaying copyright and branding info with gradient backgrounds.
-* **Session Wrapper (`Components/SesssionWrapper.js`):** Encapsulates NextAuth's `SessionProvider` to enable application-wide session management.
-
-### 2. High-Converting Landing Page with Live Statistics (`app/page.js`)
-* **Hero Section:** Features smooth fade-in animations and text highlighting the platform's mission.
-* **Active Session Guard:** Seamless user experience that automatically redirects authenticated landing page visitors directly to their respective `/dashboard` views.
-* **Interactive CTAs:** Includes an animated "Start Here" button with slide-in shimmer, scale transitions, and hover-triggered backdrop highlights.
-* **Live Database Stats Dashboard (`app/api/landing-stats/route.js`):** Displays real-time platform impact statistics aggregated dynamically from the MongoDB database, including:
-  * **Creators Empowered:** Total count of active registered creators on the platform.
-  * **Chais Bought:** The count of total successful payments processed.
-  * **Supporters Worldwide:** The count of unique project backers computed using distinct email/name lookups.
-  * **Earnings Generated:** A sum of all successful payment donations, formatted in Indian Rupees (INR).
-
-### 3. Secure Database & Authentication System
-* **Database Connection (`db/connectDb.js`):** Implemented a global cached MongoDB connection using **Mongoose** to prevent socket connection exhaustion during Next.js hot-reloads in development.
-* **User Schema (`models/user.js`):** Defines user credentials with clean schemas including email normalization (lowercase, trim), default goals, categories (`Design`, `Engineering`, `Writing`, `Video`), view counters, and timestamps.
-* **Payment Schema (`models/Payment.js`):** Schema for user support payments, tracking supporting user name, email, target creator (`to_username`), amount, custom message, and status (`pending`, `success`, `failed`).
-* **Withdrawal Schema (`models/Withdrawal.js`):** Schema tracking payout withdrawals for creators, detailing amount, withdrawal method (e.g., Stripe, PayPal), and transfer status.
-* **Post Schema (`models/Post.js`):** Schema tracking update posts published by creators, storing title, content, creator slug, and the minimum cumulative donation required to unlock the post.
-* **Credentials Registration API (`app/api/signup/route.js`):** Secure POST endpoint for registering new users. Includes input validation, email duplicate checks, and password hashing using `bcryptjs`.
-* **NextAuth Config (`app/api/auth/[...nextauth]/route.js`):** Standardized NextAuth setup utilizing **JWT session strategy** with support for three auth providers:
-  * **Google OAuth** for fast single-click social sign-on.
-  * **GitHub OAuth** for developers and creators.
-  * **Credentials Provider** integrated directly with the MongoDB backend to validate hashed passwords.
-
-### 4. Dedicated Sign Up & Login Portals with Stateless OTP Verification
-* **Active Session Guard:** Seamless user experience that automatically redirects authenticated users directly to `/dashboard` if they attempt to access the `/login` or `/signup` portals.
-* **Interactive Sign Up Form (`app/signup/page.js`):** Fully styled username, email, password, and confirm password fields.
-* **Stateless Email OTP Verification during Signup:**
-  * To prevent database clutter from unverified/fake accounts, registration employs a 2-step stateless flow.
-  * **Step 1**: Validates user inputs, generates a 6-digit OTP, mails it to the user, and signs the signup payload + hashed OTP signature using the `NEXTAUTH_SECRET` into a stateless token.
-  * **Step 2**: The user enters the OTP code from their email. The server decodes the token, verifies the signature/expiry, matches the OTP code, hashes the password, and creates the account.
-* **Auto-Login on Verification:** Automatically logs the user in immediately after successful OTP verification, removing unnecessary steps.
-* **Live Password Strength Meter:** Evaluates password input in real-time (from "Very Weak" to "Very Strong") with an animated five-bar indicator showing progress and dynamic color states.
-* **Password Visibility Toggle:** Integrated a stateful show/hide toggle for password entries.
-* **Multi-provider Social Auth:** Custom buttons for single-click GitHub, Google, and Apple third-party sign-ins.
-* **Forgot Password Flow (`app/forgot-password/page.js`):** Allows users to request password reset links via email.
-
-### 5. Interactive Role Selection Portal (`app/select-role/page.js`)
-* **Dynamic Role Chooser:** Allows users to select their profile type as either a **Student** (to learn and support) or a **Creator** (to share work and get funded) using beautifully styled, interactive cards with micro-animations.
-* **Role Database Persistence:** Integrates with the `/api/user/role` backend endpoint to persist the user's selected role directly to their MongoDB user document.
-* **Stateful Flow:** Features client-side persistence (`localStorage`) alongside the database update to manage user redirection flows.
-
-### 6. Student Welcome Transition & Dashboard Layout (`app/student/...` & `app/dashboard/student/...`)
-* **Dedicated Sub-Layout (`app/student/layout.js`):** A custom layout that overrides the global navbar and footer, offering a clean, full-screen interactive space.
-* **Premium Welcome Overlay (`app/student/welcome/page.js`):** Displays a personalized greeting for the logged-in student user, which automatically slides up after a few seconds using custom CSS animations.
-* **Staggered Dashboard Animation (`app/student/welcome/WelcomeTransition.css`):** Features beautifully timed, staggered entrance animations for the dashboard header, summary text, and the primary "Get Started" call-to-action button.
-* **Dynamic Student Dashboard (`app/dashboard/student/page.js`):** Features a control center for students, supporting:
-  * **Explore Feed (`app/api/posts/explore/route.js`):** A unified feed of all creator updates. Includes live search, category filtering ribbons, layout toggle options (grid/list layouts), and interactive gated lock screens to support creators.
-  * **Supported Creators Hub (`Components/Platform/SupportedCreatorsView.js`):** Displays active backing statistics (total chais bought, total amount contributed in INR, last supported date) with quick-navigation to public creator profile pages.
-
-### 7. Multi-Step Creator Onboarding Flow (`app/creator-onboarding/...`)
-* **Shared Context State Onboarding Layout (`app/creator-onboarding/layout.js`):** Implements a customized onboarding layout utilizing React Context (`OnboardingContext`) to manage unified form state dynamically across all steps.
-* **Dynamic Step & Progress Indicators:** Automatically tracks pathnames (`/step1`, `/step2`, `/step3`, `/step4`) to calculate progress percentage, rendering stateful step indicators and transitionary header details.
-* **Step 1 - Identity Details (`app/creator-onboarding/step1/page.js`):** Collects Legal Full Name, Date of Birth, and features a stateful Phone Verification field with a dummy OTP trigger.
-* **Step 2 - Social Proof & ID Verification (`app/creator-onboarding/step2/page.js`):** Enables single-click toggles to mock connecting Twitter/X and GitHub accounts, alongside a drag-and-drop file upload area to upload Passport or Driver's License credentials.
-* **Step 3 - Payout Selection & Terms (`app/creator-onboarding/step3/page.js`):** Configures options for Payout Methods (Stripe, PayPal, USDC Crypto Wallet), stores account details, and handles compliance checks and terms agreements.
-* **Step 4 - Onboarding Success & Compliance Review (`app/creator-onboarding/step4/page.js`):** Serves as the completion confirmation page, letting creators know their application is encrypted and currently undergoing compliance review.
-* **Onboarding Database Persistence (`app/api/creator-onboarding/route.js`):** Persists all four steps of the creator onboarding workflow directly to the MongoDB user document (storing legal name, phone, DOB, mock document upload path, payout selections, and verification states).
-
-### 8. Unified Creator Dashboard System (`app/dashboard/...`)
-* **Core Dashboard Page (`app/dashboard/page.js`):**
-  * Displays metrics cards for **Monthly Revenue**, **Goal Progress**, and **Profile Views** with real-time numeric counting animation (`animateValue`).
-  * Features an interactive **Chart.js** line chart displaying actual weekly revenue side-by-side with target revenue and projected future earnings.
-  * Includes a **Settings Modal** to update the user's monthly funding goal, triggering instant server-side recalculation of goals.
-* **Audience Insights Dashboard (`app/dashboard/audience-insights/page.js`):**
-  * Provides granular support analytics: total supporters count, support value distribution brackets, and conversion rates.
-  * Features a **Top Supporters Leaderboard** showing active backers.
-  * Integrates with the backend stats API to dynamically fetch audience metadata.
-  * **Tiered Membership Pricing & Members Directory:** Supports configuration of tiered subscription models and provides an interactive **Members Directory Modal** allowing creators to search, sort, and detail active supporting member records.
-* **Payouts Dashboard (`app/dashboard/payouts/page.js`):**
-  * Displays financial indicators: **Available Balance**, **Pending Clearance**, and **Total Withdrawn**.
-  * Contains a **Withdrawal Request Modal** allowing creators to instantly request payouts to their configured methods (Stripe, PayPal, Crypto).
-  * Includes transaction logs with search, time frame, and status-based filtering options.
-* **Add Payout Method Portal (`app/dashboard/payouts/add/page.js` & [PayoutMethod.js](file:///d:/PracticeReact/getchai/models/PayoutMethod.js)):**
-  * **Region-Based Localization Options:** Offers a region-selector to choose between United States (USD) and India (INR) localizations.
-  * **Dynamic Regional Option Filtering:** 
-    * If region is set to **India (INR)**, it hides international methods and renders only India-compatible channels (Domestic Bank Account, UPI ID).
-    * If region is set to **United States (USD)**, it hides domestic India tabs and displays only USA-compatible channels (Stripe, PayPal, Wise, Wire Transfer, Crypto Wallet).
-  * **Dynamic Validation & Mongoose Persistence:** Validates credentials on submission and posts directly to `/api/dashboard/payouts/methods` to persist in MongoDB.
-* **Virtual Wallet & Deposits System (`app/dashboard/wallet/page.js` & [WalletTransaction.js](file:///d:/PracticeReact/getchai/models/WalletTransaction.js)):**
-  * **Mock Deposit Manager:** Provides interface to load mock currency (INR) using preset buttons (e.g., ₹500, ₹2,000) or custom input values.
-  * **Ledger Accounting:** Persists deposit, payment, and withdrawal transactions on a secure schema, rendering a queryable transaction list with filter states.
-  * **Unified Balance Display:** Renders the creator's live wallet balance in metrics dashboards and navigation panels.
- 
-### 9. Unified Platform Hub & Gated Content (`app/dashboard/platform/page.js`)
-* **Interactive Skeleton/Shimmer Loaders:** Integrates CSS keyframe-based shimmer placeholders (`platform-shimmer-card` / `platform-shimmer-item`) in views like settings, search, and membership tabs to provide an extremely smooth loading experience while data fetches asynchronously.
-* **Advanced Search Creators (`Components/Platform/SearchCreators.js`):**
-  * Live category filtering ribbon (`All`, `Design`, `Engineering`, `Writing`, `Video`).
-  * Advanced sorting drop-down: Sort by Popularity (Views), Name (A-Z), or Funding Goal.
-  * Dynamically queries the `/api/creators` endpoint with parameters (`q`, `category`, `sortBy`).
-* **Public Profile Page (`Components/Platform/PublicProfile.js`):**
-  * Public-facing page rendering creator bio, metrics, social links, support message board, and support/chai payment section.
-  * **Razorpay Checkout Option:** Supporter actions now present a payment method selector, allowing users to choose between local Wallet balance deduction or a direct simulation gateway bypassing wallet balance checks.
-* **Gated Creator Posts System (`app/api/posts/route.js`):**
-  * Allows creators to write and publish updates locked behind a specific cumulative donation amount (minimum threshold).
-  * Evaluates logged-in supporter's cumulative successful support to the creator dynamically.
-  * Shows full post content if unlocked, or displays a lock overlay requesting additional support if cumulative donations are insufficient.
-* **Supporter Message Feed Protection (`app/api/support/route.js`):**
-  * Protects the creator's support message feed.
-  * Full message details are visible to the creator themselves or any supporter who has contributed a lifetime total of at least ₹100.
-  * Other users see obfuscated messages marked with a lock badge (`🔒 Locked. Support this creator to unlock the message feed!`).
- 
-### 10. Direct Messaging System (`Components/Platform/DirectMessagesView.js` & [Message.js](file:///d:/PracticeReact/getchai/models/Message.js))
-* **In-App Supporter-Creator Chat:** Fully styled direct messaging system that lets creators and their supporters interact directly.
-* **Conversation Aggregation:** Automatically groups message history under thread tabs, compiling a active list of unique interlocutors in a responsive sidebar.
-* **Secure API Delivery:** Direct messages post and fetch from `/api/messages` and `/api/messages/conversations` dynamically, persisting in a secure MongoDB collection.
- 
-### 11. Payout Configuration & Threshold Safeguards
-* **Payout Schedule Frequency:** Creators can customize their automatic deposit payouts (e.g. Every Friday, Monthly, or Manual) in their settings.
-* **Minimum Withdrawal Enforcement:** Restricts creator balance withdrawals below a configurable threshold (e.g., minimum ₹1,000 withdrawal) to safeguard billing transfers.
-
-### 12. Information Portals (`app/about/page.js` & `app/contact/page.js`)
-* **About Page:** Houses details on platform mission, creator economics, and user FAQs.
-* **Contact Page:** Features interactive inquiry forms for feedback and creator partnership applications.
-
----
-
-## 🛡️ Security Features & Best Practices
-
-To safeguard user accounts, transaction integrity, and overall web reliability, the application implements the following robust security measures:
-
-### 1. Atomic Wallet Balance Operations & MongoDB Transactions
-* **ACID Transactions:** Wallet deductions, creator wallet balance credits, and transaction logging inside `app/api/support/route.js` execute inside Mongoose Session Transactions (`withTransaction()`) to guarantee database consistency and eliminate concurrency double-spending.
-* **Prevention of Race Conditions:** Utilizes Mongoose's `findOneAndUpdate` combined with the `$inc` operator for atomic state updates.
-
-### 2. Strong Password Complexity Policies
-* **Harden User Credentials:** The registration system parses passwords against a strict complexity regex requiring at least 8 characters with uppercase, lowercase, numbers, and special symbols.
-
-### 3. Zod Payload Schema Validation
-* **Strict Parameter Checking:** Integrates `zod` schema definitions in [lib/validations.js](file:///d:/PracticeReact/getchai/lib/validations.js) to validate and sanitize incoming payloads for support payments and settings updates.
-
-### 4. Secure HTTP Response Headers
-* **Defense in Depth:** Configured in `next.config.mjs` to inject protective security headers into all responses:
-  * `X-Frame-Options: DENY` (prevents clickjacking).
-  * `X-Content-Type-Options: nosniff` (mitigates MIME-type sniffing).
-  * `Referrer-Policy: strict-origin-when-cross-origin` (avoids data leakages).
-  * `Strict-Transport-Security: max-age=31536000; includeSubDomains` (enforces HTTPS).
-  * `Permissions-Policy` (limits browser features).
-  * `X-XSS-Protection: 1; mode=block` (mitigates cross-site scripting).
-
-### 5. Active Session Guards & Redirection Flow
-* **Seamless & Secure Redirection:** Landing page (`/`), login (`/login`), and signup (`/signup`) routes inspect authentication states instantly. Logged-in users are automatically redirected away from non-dashboard entry portals.
-
-### 6. Multi-Factor Security (2FA OTP)
-* **Secure Login OTP Validation:** Authenticated users can activate Two-Factor Authentication (2FA) in Settings. When enabled, the system leverages a dedicated verification route to generate, persist, and mail numeric verification codes to users.
-
-### 7. Email-Verified Password Resets
-* **Tokenized Recoveries:** Provides secure recovery procedures utilizing tokens that verify validity, check timestamps for expiration, and update passwords securely.
+**[Live Demo Link (e.g. Vercel)]** | [How to Run Locally](#-getting-started)
 
 ---
 
 ## 🛠️ Technology Stack
 
-* **Framework:** Next.js 16 (App Router)
-* **Library:** React 19
-* **Styling:** Tailwind CSS v4 (using `@tailwindcss/postcss`)
+* **Framework:** Next.js 16 (App Router) & React 19
+* **Styling:** Tailwind CSS v4 (PostCSS integration)
 * **Database:** MongoDB & Mongoose
-* **Authentication:** NextAuth.js & bcryptjs
-* **Validation:** Zod
+* **Authentication:** NextAuth.js (Google, GitHub, and Credentials provider)
+* **API Validation:** Zod
 * **Analytics/Charts:** Chart.js
-* **Icons:** Lucide React
-* **Fonts:** Google Fonts (Inter, Instrument Serif)
+* **Mailing Service:** Brevo API
+
+---
+
+## 🚀 Key Features
+
+* **User Authentication & Profiles:** Polished auth UX (password strength meter, show/hide toggle, session guards, and email OTP verification for secure signup).
+* **Creator Onboarding:** A structured 4-step creator onboarding flow with identity verification, social proof connection, payout setup, and compliance review.
+* **Creator Dashboard & Analytics:** Real-time metrics tracking (Monthly Revenue, Goal Progress, Profile Views) with interactive Chart.js line charts.
+* **Localization-Aware Payout Settings:** Dynamic payout configuration filtering available payout methods (Domestic Bank, UPI, Stripe, PayPal, Crypto) based on selected region (India vs. US).
+* **Virtual Wallet & Deposits:** Integrated ledger accounting allowing supporters to load mock currency via preset thresholds or custom inputs to support creators.
+* **Gated Content & Protected Feeds:** Creator-facing updates locked behind specific cumulative donation amounts and obfuscated message feeds visible only to verified supporters.
+* **Direct Messaging:** Direct creator-supporter chat system with conversation aggregation and responsive sidebars.
+
+---
+
+## 🛡️ Security Features & Best Practices
+
+* **Atomic Wallet Transactions:** Financial operations run via MongoDB/Mongoose session transactions (`withTransaction()`) to guarantee consistency and prevent double-spending.
+* **Password Complexity:** Hardened credentials using regex-based verification requiring upper/lowercase letters, numbers, and special characters.
+* **Strict Schema Validation:** Sanitization of payment payloads and configuration updates using Zod.
+* **Secure HTTP Headers:** Mitigation of typical web vulnerabilities (Clickjacking, XSS, MIME-sniffing) via security headers in `next.config.mjs`.
+* **Two-Factor Authentication (2FA):** Opt-in email-based 2FA code generation and verification integrated within settings.
+* **Active Session Guards:** Immediate client/server session checking to prevent authenticated users from accessing login or registration pages.
+
+---
+
+## 🧠 Key Learnings & Challenges
+
+* **Handling Race Conditions in Financial States:** Implementing MongoDB transactions was a key learning curve. I designed a multi-step checkout workflow utilizing Mongoose's transaction API to ensure that wallet deductions, creator payouts, and ledger entries either all succeed or fail together.
+* **Stateless Email Verification:** To avoid database pollution from fake signups, I structured a two-step stateless OTP verification system using signed JWT tokens to hold registration data until email verification is completed.
+* **Dynamic Component Architectures:** Creating context-driven multi-step forms (like the onboarding flow) taught me how to manage global state without redundant prop-drilling or database writes before final form submission.
 
 ---
 
@@ -225,6 +98,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 You can build and run the application in a Docker container using the provided `Dockerfile` and `docker-compose.yml` config.
 
 ### 1. Build and Run with Docker Compose
+
 To spin up both the Next.js application and a MongoDB database container simultaneously:
 
 ```bash
@@ -232,6 +106,7 @@ docker compose up --build
 ```
 
 ### 2. Standalone Docker Build
+
 To build only the Next.js container (e.g., for production deployment clouds):
 
 ```bash
