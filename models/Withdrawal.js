@@ -10,9 +10,7 @@ const WithdrawalSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-if (mongoose.models && mongoose.models.Withdrawal) {
-  delete mongoose.models.Withdrawal;
-}
-const Withdrawal = mongoose.model("Withdrawal", WithdrawalSchema);
+// Safe Next.js Serverless Model Pattern
+const Withdrawal = mongoose.models.Withdrawal || mongoose.model("Withdrawal", WithdrawalSchema);
 
 export default Withdrawal;

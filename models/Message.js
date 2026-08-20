@@ -11,9 +11,7 @@ const MessageSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-if (mongoose.models && mongoose.models.Message) {
-  delete mongoose.models.Message;
-}
-const Message = mongoose.model("Message", MessageSchema);
+// Safe Next.js Serverless Model Pattern
+const Message = mongoose.models.Message || mongoose.model("Message", MessageSchema);
 
 export default Message;

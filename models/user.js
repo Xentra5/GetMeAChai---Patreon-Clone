@@ -143,10 +143,7 @@ const UserSchema = new mongoose.Schema(
     { timestamps: true } // Automatically creates createdAt and updatedAt fields
 );
 
-// Delete cached model in Next.js development to force fresh compilation with updated schema fields
-if (mongoose.models && mongoose.models.User) {
-  delete mongoose.models.User;
-}
-const User = mongoose.model("User", UserSchema);
+// Safe Next.js Serverless Model Pattern
+const User = mongoose.models.User || mongoose.model("User", UserSchema);
 
 export default User;

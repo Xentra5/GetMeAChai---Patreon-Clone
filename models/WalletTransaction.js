@@ -12,9 +12,7 @@ const WalletTransactionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-if (mongoose.models && mongoose.models.WalletTransaction) {
-  delete mongoose.models.WalletTransaction;
-}
-const WalletTransaction = mongoose.model("WalletTransaction", WalletTransactionSchema);
+// Safe Next.js Serverless Model Pattern
+const WalletTransaction = mongoose.models.WalletTransaction || mongoose.model("WalletTransaction", WalletTransactionSchema);
 
 export default WalletTransaction;

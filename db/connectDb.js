@@ -2,8 +2,7 @@ import mongoose from "mongoose";
 
 /**
  * Global is used here to maintain a cached connection across hot-reloads
- * in development. This prevents connections growing exponentially
- * during API Route usage.
+ * in development and across serverless function invocations in production (Vercel).
  */
 let cached = global.mongoose;
 
@@ -18,13 +17,17 @@ async function connectDB() {
     throw new Error("Please define the MONGODB_URI environment variable in Vercel or .env.local");
   }
 
-  if (cached.conn) {
+  // If connection is already open and ready (readyState === 1), return cached connection
+  if (cached.conn && mongoose.connection.readyState === 1) {
     return cached.conn;
   }
 
-  if (!cached.promise) {
+  // If connection promise is not pending or connection dropped, reconnect
+  if (!cached.promise || mongoose.connection.readyState === 0) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 10000, // Timeout after 10s if Atlas unreachable instead of hanging indefinitely
+      maxPoolSize: 10,                 // Limit pool size per serverless container
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
@@ -36,6 +39,7 @@ async function connectDB() {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
+    cached.conn = null;
     throw e;
   }
 

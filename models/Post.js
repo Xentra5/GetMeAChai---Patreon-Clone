@@ -12,9 +12,7 @@ const PostSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-if (mongoose.models && mongoose.models.Post) {
-  delete mongoose.models.Post;
-}
-const Post = mongoose.model("Post", PostSchema);
+// Safe Next.js Serverless Model Pattern
+const Post = mongoose.models.Post || mongoose.model("Post", PostSchema);
 
 export default Post;

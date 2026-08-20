@@ -14,9 +14,7 @@ const PayoutMethodSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-if (mongoose.models && mongoose.models.PayoutMethod) {
-  delete mongoose.models.PayoutMethod;
-}
-const PayoutMethod = mongoose.model("PayoutMethod", PayoutMethodSchema);
+// Safe Next.js Serverless Model Pattern
+const PayoutMethod = mongoose.models.PayoutMethod || mongoose.model("PayoutMethod", PayoutMethodSchema);
 
 export default PayoutMethod;

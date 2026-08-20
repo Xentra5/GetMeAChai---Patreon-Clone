@@ -12,9 +12,7 @@ const PaymentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-if (mongoose.models && mongoose.models.Payment) {
-  delete mongoose.models.Payment;
-}
-const Payment = mongoose.model("Payment", PaymentSchema);
+// Safe Next.js Serverless Model Pattern
+const Payment = mongoose.models.Payment || mongoose.model("Payment", PaymentSchema);
 
 export default Payment;
