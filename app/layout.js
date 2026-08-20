@@ -15,7 +15,14 @@ const instrumentSerif = Instrument_Serif({
   weight: "400",
 });
 
+const siteUrl = process.env.NEXTAUTH_URL && process.env.NEXTAUTH_URL.trim() !== ""
+  ? (process.env.NEXTAUTH_URL.startsWith("http") ? process.env.NEXTAUTH_URL : `https://${process.env.NEXTAUTH_URL}`)
+  : process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : "http://localhost:3000";
+
 export const metadata = {
+  metadataBase: new URL(siteUrl),
   title: "GetMeAChai - Support Creators with Chai",
   description: "A platform for creators to connect with their fans and monetize their content.",
 };
